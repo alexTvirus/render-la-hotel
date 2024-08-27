@@ -4,12 +4,13 @@
 namespace App\Services;
 
 
-use App\Models\RoomTypePacket as RoomTypePacketModel;
+
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 
-class RoomTypePacketServices extends BaseServices
+class UserServices extends BaseServices
 {
-    public function __construct(RoomTypePacketModel $model)
+    public function __construct(User $model)
     {
         parent::__construct($model);
     }
@@ -17,29 +18,10 @@ class RoomTypePacketServices extends BaseServices
     public function index($request)
     {
         $query = $this->model;
+        $query->with('bookings');
         return $query->get();
     }
 
-
-    public function getRoomTypePacketByRooms($ids)
-    {
-        $query = $this->model->whereIn('id', $ids);
-        return $query->get();
-    }
-
-    public function getRoomTypePacketByRoomTypeAndPacket($roomType,$packets)
-    {
-        $query = $this->model
-            ->where("room_type_id",$roomType)
-            ->whereIn('packet_id', $packets);
-        return $query->get();
-    }
-
-    public function getRatings($ids)
-    {
-        $query = $this->model->whereIn('id', $ids)->ratings();
-        return $query->get();
-    }
 
     public function show($id)
     {

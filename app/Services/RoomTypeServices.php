@@ -14,12 +14,16 @@ class RoomTypeServices extends BaseServices
     private $roomServices;
     private $packetServices;
     private $roomTypePacketServices;
+    private  $bookingServices;
 
-    public function __construct(RoomTypeModel $model, RoomServices $roomServices,
+    public function __construct(RoomTypeModel $model,
+                                BookingServices $bookingServices,
+                                RoomServices $roomServices,
                                 PacketServices $packetServices,
                                 RoomTypePacketServices $roomTypePacketServices)
     {
         parent::__construct($model);
+        $this->bookingServices= $bookingServices;
         $this->roomServices = $roomServices;
         $this->packetServices = $packetServices;
         $this->roomTypePacketServices = $roomTypePacketServices;
@@ -59,7 +63,8 @@ class RoomTypeServices extends BaseServices
         // sẽ lấy roomtype tìm đc thực thi tiếp
         if (isset($request['checkin_at']) || isset($request['checkout_at'])) {
             // get room voi dieu kien cua booking
-            $rooms = $this->roomServices->getRoomByBooking($request);
+            $bookings = $this->bookingServices->getBookingByNotAvailble($request)->pluck("id");
+            $rooms = $this->roomServices->getRoomByBooking($bookings);
             // tim packet tuong ung voi room
             $roomtypes->each(function ($item, $key) use ($rooms, $roomtypes) {
                 $packetIds = collect();

@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiControllers\V1\Frontend\RoomTypeController;
-
+use App\Http\Controllers\ApiControllers\V1\Frontend\BookingController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -62,11 +62,9 @@ Route::group(array('prefix' => '/v1'), function () {
 
     Route::group(array('prefix' => 'payments', 'as' => 'payments.'), function () {
     });
-	
+
 	Route::group(array('prefix' => 'checkout', 'as' => 'checkout.'), function () {
-		Route::post('/', function () {
-			return "ok";
-        })->name('store');
+		Route::post('/', [BookingController::class,'store'])->name('store');
     });
 
     Route::group(array('prefix' => 'packets', 'as' => 'packets.'), function () {

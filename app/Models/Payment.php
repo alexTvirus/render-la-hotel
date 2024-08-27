@@ -2,24 +2,31 @@
 
 namespace App\Models;
 
-
+use App\Services\ChapterServices;
+use App\Services\HashtagServices;
+use App\Services\TaggedServices;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 use App\Models\Traits\SearchableTraitExtend;
 
-class Booking extends BaseModel
+class Payment extends BaseModel
 {
 
-    protected $table = "bookings";
+    protected $table = "payments";
     protected $fillable =[
-        'checkin_at',
-        'checkout_at',
-        'total_price',
-        'number_guests',
-        'status',
-        'customer_id',
+        'payment_date',
+        'payment_method',
+        'description',
+        "payment_amount",
+        "address",
+        "email",
+        "city",
+        "state",
+        "post_code",
+
 
         'created_by',
         'updated_by',
@@ -47,22 +54,5 @@ class Booking extends BaseModel
 //            ->generateSlugsFrom('comic_name')
 //            ->saveSlugsTo('slug');
 //    }
-
-    public function roomBookings(){
-        return $this->hasMany(RoomBooking::class,'booking_id');
-    }
-
-    public function bookingStatus(){
-        return $this->belongsTo(BookingStatus::class,'status');
-    }
-
-    public function customer(){
-        return $this->belongsTo(User::class,'customer_id');
-    }
-
-
-    public function rooms(){
-        return $this->belongsToMany(Rooms::class,'room_booking','booking_id','room_id');
-    }
 
 }

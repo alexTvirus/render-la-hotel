@@ -15,11 +15,11 @@ class CorsMiddleware
      */
     public function handle($request, Closure $next)
     {
- 
+
 		$response = $next($request);
 		$response = $response instanceof RedirectResponse ? $response : response($response);
 		$response->header('Access-Control-Allow-Origin', '*');
-		
+
 		return $next($request);
     }
 }

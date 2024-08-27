@@ -9,11 +9,10 @@ use Illuminate\Support\Facades\Storage;
 
 class RoomServices extends BaseServices
 {
-    private  $bookingServices;
-    public function __construct(RoomModel $model,BookingServices $bookingServices)
+
+    public function __construct(RoomModel $model)
     {
         parent::__construct($model);
-        $this->bookingServices= $bookingServices;
     }
 
     public function index($request)
@@ -23,9 +22,8 @@ class RoomServices extends BaseServices
     }
 
 
-    public function getRoomByBooking($request)
+    public function getRoomByBooking($bookings)
     {
-        $bookings = $this->bookingServices->getBookingByNotAvailble($request)->pluck("id");
 
         $query = $this->model->whereNotIn('id', function ($query) use ($bookings) {
             $query->select('room_id')->from('room_booking')->whereIn('booking_id', $bookings);
@@ -35,6 +33,10 @@ class RoomServices extends BaseServices
             }]);
         $rs = $query->get();
         return $rs;
+    }
+
+    public function getRoomByRoomTypePacket($roomTypePackets){
+        return $this->model->whereIn("room_type_packet_id",$roomTypePackets)->get();
     }
 
     public function show($id)

@@ -30,8 +30,8 @@ class RoomTypeController extends BaseController
 
     public function index(Request $request)
     {
-        //$request['checkin_at'] = "2024-05-16";
-        //$request['checkout_at'] ="2024-05-17";
+//        $request['checkin_at'] = "2024-05-26";
+//        $request['checkout_at'] ="2024-05-27";
         $lists = $this->roomTypeServices->index($request);
         return (new RoomTypeListResource($lists))->additional([
             'total' => $lists->total(),

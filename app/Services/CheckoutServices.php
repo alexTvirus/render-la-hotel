@@ -4,12 +4,14 @@
 namespace App\Services;
 
 
-use App\Models\RoomTypePacket as RoomTypePacketModel;
+use App\Enums\BookingStatus;
+use App\Models\Booking as BookingModel;
 use Illuminate\Support\Facades\Storage;
 
-class RoomTypePacketServices extends BaseServices
+class CheckoutServices extends BaseServices
 {
-    public function __construct(RoomTypePacketModel $model)
+
+    public function __construct(BookingModel $model)
     {
         parent::__construct($model);
     }
@@ -21,25 +23,6 @@ class RoomTypePacketServices extends BaseServices
     }
 
 
-    public function getRoomTypePacketByRooms($ids)
-    {
-        $query = $this->model->whereIn('id', $ids);
-        return $query->get();
-    }
-
-    public function getRoomTypePacketByRoomTypeAndPacket($roomType,$packets)
-    {
-        $query = $this->model
-            ->where("room_type_id",$roomType)
-            ->whereIn('packet_id', $packets);
-        return $query->get();
-    }
-
-    public function getRatings($ids)
-    {
-        $query = $this->model->whereIn('id', $ids)->ratings();
-        return $query->get();
-    }
 
     public function show($id)
     {

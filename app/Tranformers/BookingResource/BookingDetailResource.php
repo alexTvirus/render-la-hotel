@@ -1,12 +1,12 @@
 <?php
 
 
-namespace App\Tranformers\ContentImageResource;
+namespace App\Tranformers\BookingResource;
 
 
 use App\Tranformers\ApiResource;
 
-class ContentImageListResource extends ApiResource
+class BookingDetailResource extends ApiResource
 {
     /**
      * Transform the resource collection into an array.
@@ -39,15 +39,6 @@ class ContentImageListResource extends ApiResource
 //            ]);
 //        });
 //
-        $contentImages = collect();
-        $this->resource->each(function ($item,$index) use(&$contentImages){
-            $contentImages->push([
-                'index'=> $index+1,
-                'link_img' => $item->link_img
-            ]);
-
-        });
-
-        return $contentImages;
+        return $this->resource->toArray();
     }
 }
