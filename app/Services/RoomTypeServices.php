@@ -158,7 +158,8 @@ class RoomTypeServices extends BaseServices
         $data = $this->model->where('id', $id)->first();
         if ($data) {
             if (!$data->rooms->isEmpty()) {
-                $this->prepareRoomType($data);
+				$packetIds = $data->roomTypePackets->pluck("packet_id");
+                $this->prepareRoomType($data,$packetIds);
             } else {
                 $data = collect();
             }

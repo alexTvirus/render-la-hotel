@@ -16,7 +16,7 @@ return new class extends Migration
 //            $table->dateTime('free_at')->nullable();
             $table->decimal('base_price', 16, 3)->nullable();
             $table->string('name')->nullable();
-            $table->string('description')->nullable();
+            $table->text('description')->nullable();
             $table->integer('max_occupancy')->nullable();
             $table->integer('room_size')->nullable();
             $table->integer('bathrooms')->nullable();
