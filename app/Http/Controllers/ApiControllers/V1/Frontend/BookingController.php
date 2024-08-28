@@ -24,12 +24,19 @@ class BookingController extends BaseController
         parent::__construct();
     }
 
-    public function index(Request $request,$room_type_id)
+    public function index(Request $request,$customerId)
     {
-
+        $lists = $this->bookingServices->index($customerId,$request);
+        return (new BookingListResource($lists))->additional([
+            'total' => $lists->total(),
+            'lastPage' => $lists->lastPage(),
+            'currentPage' => $lists->currentPage(),
+            'perPage' => (int)$lists->perPage(),
+        ]);
     }
 
     public function store(Request $request){
+		// todo : neu that bai tra ve ly do that bai
         $info = $request->only([
             'packets',
             'room',
@@ -53,7 +60,7 @@ class BookingController extends BaseController
             return $this->responseJson('success', Response::HTTP_OK, new BookingDetailResource($entity));
         } catch (\Exception $e) {
             DB::rollback();
-            return $this->responseJson('fail', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->responseJson($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR,["status"=>4]);
         }
     }
 }

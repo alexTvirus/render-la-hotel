@@ -24,6 +24,8 @@ return new class extends Migration
             $table->string('state')->nullable();
             $table->string('post_code')->nullable();
 
+            $table->bigInteger('booking_id')->nullable();
+
             $table->bigInteger('created_by')->nullable();
             $table->bigInteger('updated_by')->nullable();
             $table->timestamps();

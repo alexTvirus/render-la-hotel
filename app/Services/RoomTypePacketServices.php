@@ -27,7 +27,15 @@ class RoomTypePacketServices extends BaseServices
         return $query->get();
     }
 
-    public function getRoomTypePacketByRoomTypeAndPacket($roomType,$packets)
+    public function getRoomTypePacketByRoomTypeAndPacket($roomType,$packet)
+    {
+        $query = $this->model
+            ->where("room_type_id",$roomType)
+            ->where('packet_id', $packet);
+        return $query->get();
+    }
+
+    public function getRoomTypePacketByRoomTypeAndPackets($roomType,$packets)
     {
         $query = $this->model
             ->where("room_type_id",$roomType)

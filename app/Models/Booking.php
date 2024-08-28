@@ -60,6 +60,10 @@ class Booking extends BaseModel
         return $this->belongsTo(User::class,'customer_id');
     }
 
+    public function payments(){
+        return $this->hasMany(Payment::class,'booking_id');
+    }
+
 
     public function rooms(){
         return $this->belongsToMany(Rooms::class,'room_booking','booking_id','room_id');

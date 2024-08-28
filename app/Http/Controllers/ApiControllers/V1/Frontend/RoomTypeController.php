@@ -24,7 +24,7 @@ class RoomTypeController extends BaseController
 
     public function show(Request $request,$code)
     {
-        $entity = $this->roomTypeServices->show($code);
+        $entity = $this->roomTypeServices->show($code,$request);
         return (new RoomTypeDetailResource($entity));
     }
 

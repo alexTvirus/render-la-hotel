@@ -29,16 +29,30 @@ class BookingServices extends BaseServices
         $this->paymentServices = $paymentServices;
     }
 
-    public function index($request)
+    public function index($customerId, $request)
     {
+        $limit = $request->get("limit", BookingModel::LIMIT_PAGE);
         $query = $this->model;
-        $customerId = $request->get('customer_id');
+
         if ($customerId && !empty($customerId)) {
-            $query = $query->with('customer', function ($query) use ($customerId) {
-                $query->where('id', $customerId);
-            });
+            $query = $query->where("customer_id", $customerId);
+//            $query->with('customer', function ($query) use ($customerId) {
+//                $query->where('id', $customerId);
+//            });
         }
-        return $query->get();
+        $query->with("payments", function ($query) {
+            $query->select("payments.id","payments.payment_date",
+                "payments.payment_method","payments.description",
+            "payments.payment_amount","payments.booking_id");
+        });
+
+        $query->with("rooms",function ($query){
+            $query->select("rooms.id","rooms.room_view",
+                "rooms.room_number","rooms.room_type_packet_id");
+        });
+
+        return $query->select("id","checkout_at","checkin_at","total_price"
+        ,"number_guests","status")->paginate($limit);
     }
 
     public function getBookingByNotAvailble($param)
@@ -76,25 +90,58 @@ class BookingServices extends BaseServices
         // 3. tạo record payment với id booking
 
         $totalPrice = 10000;
-        $roomType = $request["room.id"];
+        $roomType = $request["room"]["id"];
         $numberRoom = count($request["packets"]);
         $packets = [];
-        $paymentAmount = $request["payment_amount"];
-        $request["packets"]->each(function ($item, $index) {
-            $packets[] = $item->id;
-        });
+        $paymentAmount = $request["payment"]["payment_amount"] ?? 0;
+        foreach ($request["packets"] as $item) {
+            $packets[] = $item["id"];
+        }
 
         $isStopBooking = false;
 
         $booking = [];
 
-        $roomTypepackets = $this->roomTypePacketServices->getRoomTypePacketByRoomTypeAndPacket($roomType, $packets);
+        $hashCheck = [];
 
-        $rooms = $this->roomServices->getRoomByRoomTypePacket($roomTypepackets);
-
-        if (($rooms->count() < $numberRoom) || $isStopBooking) {
-            throw new Exception("room not available");
+        // tạo dữ liệu số lượng packet ứng với packet
+        foreach ($packets as $packet) {
+            if (isset($hashCheck[$packet])) {
+                $hashCheck[$packet] += 1;
+            } else {
+                $hashCheck[$packet] = 1;
+            }
         }
+
+        $roomAvailable = collect();
+
+        foreach ($hashCheck as $key => $value) {
+            // lấy ra roomtypepacket ứng với packet roomtype
+            $roomTypePackets = $this->roomTypePacketServices->getRoomTypePacketByRoomTypeAndPacket($roomType, $key)->pluck("id");
+            if (count($roomTypePackets) < 1) {
+                $isStopBooking = true;
+                break;
+            }
+            // điều kiện booking về ngày check in phải thõa
+            $bookings = $this->getBookingByNotAvailble($request)->pluck("id");
+            // lấy ra room thõa đk booking, và thõa đk room type
+            $rooms = $this->roomServices->getRoomByRoomTypePacketsAndBooking($roomTypePackets, $bookings);
+            // nếu số room tìm đc nhỏ hơn số room muốn đặt thì lỗi
+            if ($rooms->count() < $value) {
+                $isStopBooking = true;
+                break;
+            } else {
+                $rooms = $rooms->take($value);
+                $roomAvailable = $roomAvailable->merge($rooms);
+            }
+        }
+
+
+        if ($isStopBooking) {
+            throw new \Exception("room not available");
+        }
+
+
         if ($paymentAmount == 0) {
             $booking["status"] = BookingStatus::PENDING;
         } else if ($totalPrice > $paymentAmount) {
@@ -103,7 +150,8 @@ class BookingServices extends BaseServices
             $booking["status"] = BookingStatus::COMPLETED;
         }
 
-
+        // todo: thêm custom id bằng user đang login
+        $booking["customer_id"] = 1;
         $booking["checkin_at"] = $request["checkin_at"];
         $booking["checkout_at"] = $request["checkout_at"];
         $booking["total_price"] = $totalPrice;
@@ -112,11 +160,13 @@ class BookingServices extends BaseServices
         $booking = $this->save($booking);
 
         if (!$booking || $isStopBooking) {
-            throw new Exception("booking not available");
+            throw new \Exception("booking not available");
         }
 
         $roomBookings = collect();
-        $rooms->each(function ($room) use ($booking, &$roomBookings) {
+
+        // các room thõa đk có thể đặt phòng
+        $roomAvailable->each(function ($room) use ($booking, &$roomBookings) {
             $roomBooking = [
                 "booking_id" => $booking->id,
                 "room_id" => $room->id
@@ -131,28 +181,26 @@ class BookingServices extends BaseServices
         });
 
         if ($isStopBooking) {
-            throw new Exception("booking not available");
+            throw new \Exception("booking not available");
         }
 
         $payment = [
-            "payment_date" => $request["payment_date"] || "",
-            "payment_method" => $request["payment_method"] || "",
-            "description" => $request["description"] || "",
-            "payment_amount" => $request["payment_amount"] || "",
-            "address" => $request["address"] || "",
-            "email" => $request["email"] || "",
-            "city" => $request["city"] || "",
-            "state" => $request["state"] || "",
-            "post_code" => $request["post_code"] || ""
+            "booking_id" => $booking->id,
+            "payment_date" => $request["payment"]["payment_date"] ?? "",
+            "payment_method" => $request["payment"]["payment_method"] ?? "",
+            "description" => $request["payment"]["description"] ?? "",
+            "payment_amount" => $request["payment"]["payment_amount"] ?? "",
+            "address" => $request["payment"]["address"] ?? "",
+            "email" => $request["payment"]["email"] ?? "",
+            "city" => $request["payment"]["city"] ?? "",
+            "state" => $request["payment"]["state"] ?? "",
+            "post_code" => $request["payment"]["post_code"] ?? ""
         ];
         $payment = $this->paymentServices->save($payment);
 
         if (!$payment || $isStopBooking) {
-            throw new Exception("payment not available");
+            throw new \Exception("payment not available");
         }
-
-        $booking->payment = $payment;
-        $booking->rooms = $roomBookings;
 
         return $booking;
     }

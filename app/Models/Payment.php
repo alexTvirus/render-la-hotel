@@ -17,6 +17,7 @@ class Payment extends BaseModel
 
     protected $table = "payments";
     protected $fillable =[
+        'booking_id',
         'payment_date',
         'payment_method',
         'description',

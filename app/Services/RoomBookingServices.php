@@ -27,10 +27,36 @@ class RoomBookingServices extends BaseServices
         return $data;
     }
 
+    public function getNotAvailableByBooking($param)
+    {
+        $from_time = $param['checkin_at'];
+        $to_time = $param['checkout_at'];
+        $query = $this->model
+            ->join('bookings', function ($join) use ($from_time, $to_time) {
+                $join->on('bookings.id', '=', 'room_booking.booking_id')
+                    ->where(function ($query) use($from_time, $to_time){
+                        $query->orwhere(function ($query) use ($from_time, $to_time) {
+                            $query
+                                ->whereRaw("bookings.checkin_at <= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s')", $from_time)
+                                ->whereRaw("bookings.checkout_at >= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s')", $from_time);
+                        });
+                        $query->orwhere(function ($query) use ($from_time, $to_time) {
+                            $query
+                                ->whereRaw("bookings.checkin_at >= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s')", $from_time)
+                                ->whereRaw("bookings.checkin_at <= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s')", $to_time);
+                        });
+                    });
+
+
+            });
+
+        return $query->get();
+    }
+
     public function save(array $attributes)
     {
         if (!empty($attributes['id'])) {
-            $entity = $this->model->where('id',$attributes['id'])->first();
+            $entity = $this->model->where('id', $attributes['id'])->first();
             if ($entity) {
                 $entity->fill($attributes)->save();
                 return $entity;
@@ -38,7 +64,7 @@ class RoomBookingServices extends BaseServices
                 return null;
             }
         } else {
-            $entity=$this->model->create($attributes);
+            $entity = $this->model->create($attributes);
             return $entity;
         }
     }

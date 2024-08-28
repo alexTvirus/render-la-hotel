@@ -14,19 +14,22 @@ class RoomTypeServices extends BaseServices
     private $roomServices;
     private $packetServices;
     private $roomTypePacketServices;
-    private  $bookingServices;
+    private $bookingServices;
+    private $roomBookingServices;
 
     public function __construct(RoomTypeModel $model,
                                 BookingServices $bookingServices,
                                 RoomServices $roomServices,
                                 PacketServices $packetServices,
-                                RoomTypePacketServices $roomTypePacketServices)
+                                RoomTypePacketServices $roomTypePacketServices
+        , RoomBookingServices $roomBookingServices)
     {
         parent::__construct($model);
-        $this->bookingServices= $bookingServices;
+        $this->bookingServices = $bookingServices;
         $this->roomServices = $roomServices;
         $this->packetServices = $packetServices;
         $this->roomTypePacketServices = $roomTypePacketServices;
+        $this->roomBookingServices = $roomBookingServices;
     }
 
     public function index($request)
@@ -66,6 +69,7 @@ class RoomTypeServices extends BaseServices
             $bookings = $this->bookingServices->getBookingByNotAvailble($request)->pluck("id");
             $rooms = $this->roomServices->getRoomByBooking($bookings);
             // tim packet tuong ung voi room
+            // todo: chi lay ra packet con phong neu co dieu kien booking
             $roomtypes->each(function ($item, $key) use ($rooms, $roomtypes) {
                 $packetIds = collect();
                 $rooms->each(function ($room) use ($item, &$packetIds) {
@@ -86,7 +90,7 @@ class RoomTypeServices extends BaseServices
                 // neu co thi moi hien thi
                 if (!$item->rooms->isEmpty()) {
                     $packetIds = $item->roomTypePackets->pluck("packet_id");
-                    $this->prepareRoomType($item,$packetIds);
+                    $this->prepareRoomType($item, $packetIds);
                 } else {
                     // ko co phong thi ko hien thi
                     $roomtypes->forget($key);
@@ -97,7 +101,7 @@ class RoomTypeServices extends BaseServices
         }
     }
 
-    public function prepareRoomType(&$item,$packetIds)
+    public function prepareRoomType(&$item, $packetIds)
     {
         $this->preparePacket($item, $packetIds);
         $this->prepareAmenities($item);
@@ -106,18 +110,24 @@ class RoomTypeServices extends BaseServices
         unset($item['roomTypePackets']);
     }
 
-    public function prepareRoomTypeImage(&$item){
-        $item->roomTypeImages->makeHidden(['created_by', 'updated_by', 'created_at', 'updated_at','room_type_id',
+    public function prepareRoomTypeImage(&$item)
+    {
+        $item->roomTypeImages->makeHidden(['created_by', 'updated_by', 'created_at', 'updated_at', 'room_type_id',
             'image_type_id']);
     }
 
     public function preparePacket(&$roomType, $packetIds)
     {
-        $packets = $this->packetServices->getPacketByIds($packetIds)
-            ->makeHidden(['created_by', 'updated_by', 'created_at', 'updated_at']);
-        $this->prepareRatings($roomType, $packets);
-        $roomType['packets'] = $packets;
-        $roomType->makeHidden(['created_by', 'updated_by', 'created_at', 'updated_at']);
+        if (count($packetIds) > 0) {
+            $packets = $this->packetServices->getPacketByIds($packetIds)
+                ->makeHidden(['created_by', 'updated_by', 'created_at', 'updated_at']);
+            $this->prepareRatings($roomType, $packets);
+            $roomType['packets'] = $packets;
+            $roomType->makeHidden(['created_by', 'updated_by', 'created_at', 'updated_at']);
+        } else {
+            $roomType['packets'] = [];
+        }
+
     }
 
     public function prepareAmenities(&$roomType)
@@ -158,17 +168,38 @@ class RoomTypeServices extends BaseServices
     {
     }
 
-    public function show($id)
+    public function show($id, $request)
     {
         $data = $this->model->where('id', $id)->first();
         if ($data) {
             if (!$data->rooms->isEmpty()) {
-				$packetIds = $data->roomTypePackets->pluck("packet_id");
-                $this->prepareRoomType($data,$packetIds);
+                if (isset($request['checkin_at']) || isset($request['checkout_at'])) {
+//                    $roomBookings = $this->roomBookingServices->getNotAvailableByBooking($request)->pluck("room_id")->toArray();
+//                    if (!in_array($data->id, $roomBookings)) {
+//
+//                    }
+                    // get room voi dieu kien cua booking
+                    $bookings = $this->bookingServices->getBookingByNotAvailble($request)->pluck("id");
+                    $rooms = $this->roomServices->getRoomByBooking($bookings);
+                    // tim packet tuong ung voi room
+                    // todo: chi lay ra packet con phong neu co dieu kien booking
+
+                    $packetIds = collect();
+                    $rooms->each(function ($room) use ($data, &$packetIds) {
+                        if ($room->roomTypePacket->room_type_id == $data->id)
+                            $packetIds->push($room->roomTypePacket->packet_id);
+                    });
+                    $this->prepareRoomType($data, $packetIds);
+                } else {
+                    $packetIds = $data->roomTypePackets->pluck("packet_id");
+                    $this->prepareRoomType($data, $packetIds);
+                }
             } else {
                 $data = collect();
             }
         }
+
+
         return $data;
     }
 

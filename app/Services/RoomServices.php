@@ -10,9 +10,11 @@ use Illuminate\Support\Facades\Storage;
 class RoomServices extends BaseServices
 {
 
+
     public function __construct(RoomModel $model)
     {
         parent::__construct($model);
+
     }
 
     public function index($request)
@@ -24,19 +26,25 @@ class RoomServices extends BaseServices
 
     public function getRoomByBooking($bookings)
     {
-
         $query = $this->model->whereNotIn('id', function ($query) use ($bookings) {
             $query->select('room_id')->from('room_booking')->whereIn('booking_id', $bookings);
         })
-            ->with(['roomTypePacket'=> function($query) {
-                $query->select('room_type_packet.id', 'room_type_packet.room_type_id','room_type_packet.packet_id');
+            ->with(['roomTypePacket' => function ($query) {
+                $query->select('room_type_packet.id', 'room_type_packet.room_type_id', 'room_type_packet.packet_id');
             }]);
         $rs = $query->get();
         return $rs;
     }
 
-    public function getRoomByRoomTypePacket($roomTypePackets){
-        return $this->model->whereIn("room_type_packet_id",$roomTypePackets)->get();
+    public function getRoomByRoomTypePacketsAndBooking($roomTypePackets, $bookings)
+    {
+        $query = $this->model
+            ->whereIn("room_type_packet_id", $roomTypePackets)
+            ->whereNotIn('id', function ($query) use ($bookings) {
+                $query->select('room_id')->from('room_booking')->whereIn('booking_id', $bookings);
+            });
+        $rs = $query->get();
+        return $rs;
     }
 
     public function show($id)

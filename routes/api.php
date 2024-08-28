@@ -57,8 +57,13 @@ Route::group(array('prefix' => '/v1'), function () {
     Route::group(array('prefix' => 'amenities', 'as' => 'amenities.'), function () {
     });
 
-    Route::group(array('prefix' => 'bookings', 'as' => 'bookings.'), function () {
+    Route::group(array('prefix' => 'customer', 'as' => 'customer.'), function () {
+        Route::group(array('prefix' => '{customerId}/bookings', 'as' => 'bookings.'), function () {
+            Route::get('/', [BookingController::class,'index'])->name('index');
+        });
     });
+
+
 
     Route::group(array('prefix' => 'payments', 'as' => 'payments.'), function () {
     });
