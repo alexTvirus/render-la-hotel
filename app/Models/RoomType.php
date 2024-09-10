@@ -54,7 +54,7 @@ class RoomType extends BaseModel
     }
 
     public function rooms(){
-        return $this->hasManyThrough(Rooms::class,RoomTypePacket::class);
+        return $this->hasManyThrough(Room::class,RoomTypePacket::class);
     }
 
     public function ratings(){

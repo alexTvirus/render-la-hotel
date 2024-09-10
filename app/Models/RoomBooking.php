@@ -48,7 +48,7 @@ class RoomBooking extends BaseModel
 //            ->saveSlugsTo('slug');
 //    }
     public function room(){
-        return $this->belongsTo(Rooms::class,'room_id');
+        return $this->belongsTo(Room::class,'room_id');
     }
 
     public function booking(){

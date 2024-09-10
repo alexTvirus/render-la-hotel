@@ -6,13 +6,16 @@ namespace App\Services;
 
 
 use App\Models\User;
+use App\Models\BaseModel as Model;
 use Illuminate\Support\Facades\Storage;
 
 class UserServices extends BaseServices
 {
+    public $model;
     public function __construct(User $model)
     {
-        parent::__construct($model);
+        parent::__construct(new Model());
+        $this->model = $model;
     }
 
     public function index($request)
@@ -26,6 +29,11 @@ class UserServices extends BaseServices
     public function show($id)
     {
         $data = $this->model->where('id', $id)->first();
+        return $data;
+    }
+
+    public function getUserByEmail($email){
+        $data = $this->model->where('email', $email)->first();
         return $data;
     }
 

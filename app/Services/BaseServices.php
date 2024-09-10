@@ -11,10 +11,13 @@ class BaseServices
     public $model;
 
 
-
     public function __construct(Model $model)
     {
         $this->model = $model;
+    }
+
+    protected function getCurrentUser(){
+        return auth()->user();
     }
 
     protected function responseJson($message, $code = 200, $data=null)

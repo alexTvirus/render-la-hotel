@@ -119,7 +119,7 @@ class RoomTypeServices extends BaseServices
     public function preparePacket(&$roomType, $packetIds)
     {
         if (count($packetIds) > 0) {
-            $packets = $this->packetServices->getPacketByIds($packetIds)
+            $packets = $this->packetServices->getPacketByIdsWithBenefits($packetIds)
                 ->makeHidden(['created_by', 'updated_by', 'created_at', 'updated_at']);
             $this->prepareRatings($roomType, $packets);
             $roomType['packets'] = $packets;
@@ -164,11 +164,16 @@ class RoomTypeServices extends BaseServices
     }
 
 
-    public function getRoomType($param)
+    public function getRoomTypeById($id)
     {
+        $data = $this->model->where('id', $id)->first();
+        if (!$data) {
+            return collect();
+        }
+        return $data;
     }
 
-    public function show($id, $request)
+    public function show($id, $request = [])
     {
         $data = $this->model->where('id', $id)->first();
         if ($data) {
@@ -198,8 +203,6 @@ class RoomTypeServices extends BaseServices
                 $data = collect();
             }
         }
-
-
         return $data;
     }
 

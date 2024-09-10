@@ -18,6 +18,7 @@ return new class extends Migration
             $table->dateTime('checkout_at')->nullable();
             $table->decimal('total_price', 16, 3)->nullable();
             $table->integer('number_guests')->nullable();
+			$table->text('cancel_reason')->nullable();
 
             $table->bigInteger('status')->nullable();
             $table->bigInteger('customer_id')->nullable();

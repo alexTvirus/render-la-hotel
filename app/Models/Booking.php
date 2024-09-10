@@ -20,6 +20,7 @@ class Booking extends BaseModel
         'number_guests',
         'status',
         'customer_id',
+		'cancel_reason',
 
         'created_by',
         'updated_by',
@@ -66,7 +67,7 @@ class Booking extends BaseModel
 
 
     public function rooms(){
-        return $this->belongsToMany(Rooms::class,'room_booking','booking_id','room_id');
+        return $this->belongsToMany(Room::class,'room_booking','booking_id','room_id');
     }
 
 }

@@ -16,29 +16,22 @@ class BookingListResource extends ApiResource
      */
     public function toArray($request)
     {
-//        $employee_infos = collect();
-//        $this->resource->each(function ($guide,$index) use (&$employee_infos) {
-//            $employee_infos->push([
-//                'index' => $index+1,
-//                'id' => $guide->id,
-//                'fullname' => $guide->fullname,
-//                'ssn' => $guide->ssn,
-//                'code' => $guide->code,
-//                'email' => $guide->has_employee ? $guide->has_employee->email:'',
-//                'telephone' => $guide->telephone,
-//                'image' => $guide->image,
-//                'department_id' => $guide->department_id,
-//                'department' => $guide->department ? $guide->department->name : null,
-//                'part_id' => $guide->part_id,
-//                'part' => $guide->part ? $guide->part->name : null,
-//                'team_id' => $guide->team_id,
-//                'team' => $guide->team ? $guide->team->name : null,
-//                'company_id' => $guide->company_id,
-//                'company' => $guide->company ? $guide->company->name : null,
-//
-//            ]);
-//        });
-//
-        return $this->resource->toArray();
+        $lists = collect();
+        $this->resource->each(function ($guide,$index) use (&$lists) {
+            $lists->push([
+                'index' => $index+1,
+                'id' => $guide->id,
+                'checkout_at' => $guide->checkout_at??"",
+                'checkin_at' => $guide->checkin_at??"",
+                'total_price' => $guide->total_price??0,
+                'number_guests' => $guide->number_guests??0,
+                'status' => $guide->status??'1',
+                'cancel_reason' => $guide->cancel_reason??null,
+                'canCancel' => true,
+                'rooms'=>$guide->rooms,
+                "payments"=>$guide->payments
+            ]);
+        });
+        return $lists->toArray();
     }
 }

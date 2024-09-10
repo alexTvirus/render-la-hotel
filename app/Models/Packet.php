@@ -58,6 +58,10 @@ class Packet extends BaseModel
         return $this->hasMany(PacketBenefit::class, 'packet_id');
     }
 
+    public function rooms(){
+        return $this->hasManyThrough(Room::class,RoomTypePacket::class);
+    }
+
 
     public function benefits()
     {

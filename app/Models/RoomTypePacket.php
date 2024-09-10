@@ -51,7 +51,7 @@ class RoomTypePacket extends BaseModel
     }
 
     public function rooms(){
-        return $this->hasMany(Rooms::class,'room_type_packet_id');
+        return $this->hasMany(Room::class,'room_type_packet_id');
     }
 
     public function packet(){

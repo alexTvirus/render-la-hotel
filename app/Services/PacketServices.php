@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class PacketServices extends BaseServices
 {
-    private  $bookingServices;
+
     public function __construct(PacketModel $model)
     {
         parent::__construct($model);
@@ -22,7 +22,7 @@ class PacketServices extends BaseServices
     }
 
 
-    public function  getPacketByIds($ids){
+    public function  getPacketByIdsWithBenefits($ids){
         $query = $this->model->whereIn('id', $ids)
             ->with(['benefits'=> function($query) {
                 $query->select('benefits.id', 'benefits.name','benefits.price','benefits.description');
@@ -30,6 +30,13 @@ class PacketServices extends BaseServices
 
         return $query->get();
     }
+
+    public function  getPacketByIds($ids){
+        $query = $this->model->whereIn('id', $ids);
+        return $query->get();
+    }
+
+
 
     public function show($id)
     {
