@@ -7,6 +7,7 @@ use App\Http\Controllers\ApiControllers\V1\Frontend\BookingController;
 use App\Http\Controllers\ApiControllers\V1\Frontend\AmenityController;
 use App\Http\Controllers\ApiControllers\V1\Frontend\PacketController;
 use App\Http\Controllers\ApiControllers\V1\Frontend\UserController;
+use App\Http\Controllers\ApiControllers\V1\Frontend\RatingController;
 use App\Http\Controllers\ApiControllers\V1\Auth\AuthController;
 use App\Http\Controllers\ApiControllers\V1\Auth\VerificationController;
 
@@ -63,6 +64,11 @@ Route::group(array('prefix' => '/v1'), function () {
 
     Route::group(array('prefix' => 'amenities', 'as' => 'amenities.'), function () {
         Route::get('/', [AmenityController::class, 'index'])->name('list');
+    });
+
+    Route::group(array('prefix' => 'rating', 'as' => 'rating.', 'middleware' => 'auth:api'), function () {
+        Route::get('/', [RatingController::class, 'index'])->name('list');
+        Route::post('/', [RatingController::class, 'store'])->name('store');
     });
 
     Route::group(array('prefix' => 'user', 'as' => 'user.', 'middleware' => 'auth:api'), function () {

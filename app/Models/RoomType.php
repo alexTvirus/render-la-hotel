@@ -65,6 +65,10 @@ class RoomType extends BaseModel
         return $this->belongsToMany(Amenity::class,'amenity_room_type','room_type_id','amenity_id');
     }
 
+    public function packets(){
+        return $this->belongsToMany(Packet::class,'room_type_packet','room_type_id','packet_id');
+    }
+
     public function imageTypes(){
         return $this->belongsToMany(ImageType::class,'image_types','room_type_id','image_type_id');
     }

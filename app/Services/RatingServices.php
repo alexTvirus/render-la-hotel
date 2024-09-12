@@ -30,6 +30,18 @@ class RatingServices extends BaseServices
     // todo: khi nguời dùng thay đổi rating , thì phải cập nhật bảng room type packet
     public function save(array $attributes)
     {
+        if(empty($attributes['room_type_packet_id'])){
+            $roomTypePacketServices = app()->make(RoomTypePacketServices::class);
+            $roomTypePacket = $roomTypePacketServices
+                ->getRoomTypePacketByPacketIdAndRoomTypeId($attributes["room_type_id"],$attributes["packet_id"]);
+            if(empty($roomTypePacket)){
+                return null;
+            }
+            $attributes['room_type_packet_id'] = $roomTypePacket->id;
+        }
+
+        $attributes['customer_id'] = $this->getCurrentUser()->id;
+
         if (!empty($attributes['id'])) {
             $entity = $this->model->where('id', $attributes['id'])->first();
             if ($entity) {

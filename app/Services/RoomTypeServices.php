@@ -35,36 +35,56 @@ class RoomTypeServices extends BaseServices
     public function index($request)
     {
         $limit = $request->get('limit', RoomTypeModel::LIMIT_PAGE);
+        $query_array = $request->query();
+
+
         $query = $this->model;
-        //lay tat ca room type
-        $roomtypes = $query->get();
+
 
         //filter theo rating?
 
         //filter theo gói packet
-        if (isset($request['packet'])) {
-            $request['packet'];
-            // co packet id >> tim room type packet
-            // >> tim dc room type
-            // >> set up du lieu cho room type
+        $packets = $query_array['packets'] ?? "{}";
+		$ratings = $query_array['ratings'] ?? "{}";
+		$packets = json_decode($packets, TRUE);
+		$ratings = json_decode($ratings, TRUE);
+		
+        if (!empty($packets)  || !empty($ratings)) {
+            
+            $query =$query->whereHas("packets", function ($query) use ($packets,$ratings) {
+                $query = $query
+                    ->select("packets.id"
+                );
+				if(!empty($packets)){
+					$query = $query->whereIn('packets.id', $packets);
+					
+				}
+				if(!empty($ratings)){
+					$query = $query->whereIn('room_type_packet.rate', $ratings);
+				}
+                    
+            });
         }
 
-        if (isset($request['price'])) {
-            $request['price'];
-            // co price >> tim so sanh base price cua room type
-            // >> tim dc room type
-            // >> set up du lieu cho room type
+        $price = $query_array['price'] ?? [];
+        if (!empty($price)) {
+            $price = json_decode($price, TRUE);
+            $query = $query->where('base_price', ">=", $price['min'])
+                ->where('base_price', "<=", $price['max']);
         }
 
-        if (isset($request['rate'])) {
-            $request['rate'];
-            // co price >> tim so sanh base price cua room type
-            // >> tim dc room type
-            // >> set up du lieu cho room type
-        }
+
+		$sortBy = $query_array['sortBy'] ?? 1;
+		if (!empty($sortBy)) {
+			$sortBy==1?$query->orderBy('base_price', 'asc'):$query->orderBy('base_price', 'desc');
+		}
+		
+        //lay tat ca room type
+        $roomtypes = $query->get();
+
         // điều kiện này để cuối cùng, vì sau khi thực thi các đk trên tìm ra roomtype thì
         // sẽ lấy roomtype tìm đc thực thi tiếp
-        if (isset($request['checkin_at']) || isset($request['checkout_at'])) {
+        if (!empty($request['checkin_at']) && !empty($request['checkout_at'])) {
             // get room voi dieu kien cua booking
             $bookings = $this->bookingServices->getBookingByNotAvailble($request)->pluck("id");
             $rooms = $this->roomServices->getRoomByBooking($bookings);
@@ -144,6 +164,9 @@ class RoomTypeServices extends BaseServices
                 ($packet['rating'] = 0);
 
         });
+		
+		$max = $packets->max("rating");
+		$roomType['rating'] = $max;
         unset($roomType['ratings']);
     }
 

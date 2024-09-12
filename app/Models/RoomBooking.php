@@ -19,6 +19,7 @@ class RoomBooking extends BaseModel
         'price',
         'room_id',
         'booking_id',
+		"room_type_packet_id",
 
 
         'created_by',

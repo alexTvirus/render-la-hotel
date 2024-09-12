@@ -18,6 +18,7 @@ class RoomTypePacket extends BaseModel
     protected $fillable =[
         'room_type_id',
         'packet_id',
+        'rate',
 
 
         'created_by',

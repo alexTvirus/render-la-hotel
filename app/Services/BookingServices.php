@@ -208,7 +208,8 @@ class BookingServices extends BaseServices
         $roomAvailable->each(function ($room) use ($booking, &$roomBookings) {
             $roomBooking = [
                 "booking_id" => $booking->id,
-                "room_id" => $room->id
+                "room_id" => $room->id,
+				"room_type_packet_id" => $room->room_type_packet_id
             ];
 
             $roomBooking = $this->roomBookingServices->save($roomBooking);

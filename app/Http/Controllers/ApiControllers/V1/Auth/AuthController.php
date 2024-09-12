@@ -127,6 +127,7 @@ class AuthController extends BaseController
      */
     public function logout()
     {
+        $u = auth()->user();
         auth()->logout();
 
         return response()->json(['message' => 'Successfully logged out']);

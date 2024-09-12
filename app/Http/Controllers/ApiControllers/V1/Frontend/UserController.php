@@ -10,6 +10,7 @@ use App\Tranformers\UserResource\UserListResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends BaseController
 {
@@ -23,6 +24,16 @@ class UserController extends BaseController
 
     public function update(Request $request,$id)
     {
+		$validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|between:2,100',
+            'last_name' => 'required|string|between:2,100',
+            'phone' => 'required|string|max:20|between:6,20',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->responseErrorJson("fail", Response::HTTP_CONFLICT, $validator->errors()->first());
+        }
+		
         $info = $request->only([
             "email",
             "first_name",
