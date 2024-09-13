@@ -2,27 +2,22 @@
 
 namespace App\Models;
 
-use App\Services\ChapterServices;
-use App\Services\HashtagServices;
-use App\Services\TaggedServices;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 use App\Models\Traits\SearchableTraitExtend;
 
-class RoomTypePacket extends BaseModel
+class PacketImage extends BaseModel
 {
 
-    protected $table = "room_type_packet";
+    protected $table = "packet_image";
     protected $fillable =[
-        'room_type_id',
+        'image_type_id',
         'packet_id',
-        'rate',
-        'start_at',
-        'end_at',
-        'number_guest',
-        'number_room',
+        'url',
+        'name',
+        'description',
 
 
         'created_by',
@@ -51,19 +46,5 @@ class RoomTypePacket extends BaseModel
 //            ->generateSlugsFrom('comic_name')
 //            ->saveSlugsTo('slug');
 //    }
-    public function roomType(){
-        return $this->belongsTo(RoomType::class,'room_type_id');
-    }
 
-    public function rooms(){
-        return $this->hasMany(Room::class,'room_type_packet_id');
-    }
-
-    public function packet(){
-        return $this->belongsTo(Packet::class,'packet_id');
-    }
-
-    public function ratings(){
-        return $this->hasMany(Rating::class,'room_type_packet_id');
-    }
 }

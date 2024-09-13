@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('room_booking', function (Blueprint $table) {
-            $table->bigInteger('room_type_packet_id')->nullable();
+        Schema::table('users', function (Blueprint $table) {
+            $table->date('birthday')->nullable();
+			$table->string('national')->nullable();
+			$table->boolean('isActive')->nullable()->default(true);
+			$table->timestamp('phone_verified_at')->nullable();
         });
     }
 

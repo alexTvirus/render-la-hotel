@@ -17,25 +17,46 @@ class PacketServices extends BaseServices
 
     public function index($request)
     {
-        $query = $this->model;
+
+        $query = PacketModel::query();
+
+
+        $query->with("packetImages", function ($query) {
+            $query->select("id",
+                "packet_id",
+                "url", "name",
+                "description");
+        });
+        $query->select("id", "base_price", "name_packet", "description");
         return $query->get();
     }
 
+    public function prepareRoomTypeImage(&$item)
+    {
+        $item->roomTypeImages->makeHidden(['created_by', 'updated_by', 'created_at', 'updated_at', 'room_type_id',
+            'image_type_id']);
+    }
 
-    public function  getPacketByIdsWithBenefits($ids){
+    public function getPacketByIdsWithBenefits($ids)
+    {
         $query = $this->model->whereIn('id', $ids)
-            ->with(['benefits'=> function($query) {
-                $query->select('benefits.id', 'benefits.name','benefits.price','benefits.description');
+            ->with(['roomTypePackets' => function ($query) {
+                $query->select('room_type_packet.packet_id', 'room_type_packet.room_type_id',
+                    'room_type_packet.rate', 'room_type_packet.start_at','room_type_packet.end_at',
+                    'room_type_packet.number_guest', 'room_type_packet.number_room');
+            }])
+            ->with(['benefits' => function ($query) {
+                $query->select('benefits.id', 'benefits.name', 'benefits.price', 'benefits.description');
             }]);
 
         return $query->get();
     }
 
-    public function  getPacketByIds($ids){
+    public function getPacketByIds($ids)
+    {
         $query = $this->model->whereIn('id', $ids);
         return $query->get();
     }
-
 
 
     public function show($id)

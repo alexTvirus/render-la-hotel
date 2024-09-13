@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiControllers\V1\Frontend\RoomTypeController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\ApiControllers\V1\Auth\VerificationController;
 |
 */
 Route::group(array('prefix' => '/test', 'as' => 'test'), function () {
+    $x = Carbon::now()->format('Y-m-d');
 //    $roomservice =  app()->make(\App\Services\RoomTypeServices::class);
 //    $request['checkin_at'] = "2024-05-16 00:00:00";
 //    $request['checkout_at'] ="2024-05-17 00:00:00";
@@ -67,7 +69,7 @@ Route::group(array('prefix' => '/v1'), function () {
     });
 
     Route::group(array('prefix' => 'rating', 'as' => 'rating.', 'middleware' => 'auth:api'), function () {
-        Route::get('/', [RatingController::class, 'index'])->name('list');
+        Route::get('/room/{roomTypeId}/packet/{packetId}', [RatingController::class, 'index'])->name('list');
         Route::post('/', [RatingController::class, 'store'])->name('store');
     });
 
@@ -77,7 +79,7 @@ Route::group(array('prefix' => '/v1'), function () {
             Route::get('/{bookingId}', [BookingController::class, 'show'])->name('show');
             Route::patch('/{bookingId}', [BookingController::class, 'update'])->name('patch');
         });
-		Route::patch('/{id}',[UserController::class, 'update'])->name('patch');
+        Route::patch('/{id}', [UserController::class, 'update'])->name('patch');
 
     });
 
@@ -114,9 +116,9 @@ Route::group(array('prefix' => '/v1'), function () {
         Route::post('/updatePass', [AuthController::class, 'updatePass'])->name('updatePass');
     });
 
-    Route::get('/email/verify/notice',[VerificationController::class, 'notice'])->name('verification.notice');
+    Route::get('/email/verify/notice', [VerificationController::class, 'notice'])->name('verification.notice');
     Route::get('/email/verify/', [VerificationController::class, 'verify'])->name('verification.verify');
-    Route::post('/email/resend',  [VerificationController::class, 'resend'])->name('verification.resend');
+    Route::post('/email/resend', [VerificationController::class, 'resend'])->name('verification.resend');
 });
 
 

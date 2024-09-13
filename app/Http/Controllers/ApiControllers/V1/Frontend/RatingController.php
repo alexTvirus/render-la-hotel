@@ -21,16 +21,25 @@ class RatingController extends BaseController
         parent::__construct();
     }
 
-    public function index(Request $request)
+    public function index(Request $request,$roomTypeId,$packetId)
     {
+        $request['room_type_id'] =$roomTypeId;
+        $request['packet_id'] =$packetId;
         $lists = $this->ratingServices->index($request);
-        return (new RatingListResource($lists));
+        return (new RatingListResource($lists))->additional([
+            'total' => $lists->total(),
+            'lastPage' => $lists->lastPage(),
+            'currentPage' => $lists->currentPage(),
+            'perPage' => (int)$lists->perPage(),
+        ]);
+
     }
 
     public function store(Request $request)
     {
         $info = $request->only([
             'id',
+			'room_type_packet_id',
             "comment",
             "rate",
             "packet_id",

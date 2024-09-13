@@ -59,4 +59,8 @@ class Rating extends BaseModel
 //            ->saveSlugsTo('slug');
 //    }
 
+
+    public function customer(){
+        return $this->belongsTo(User::class,'customer_id');
+    }
 }

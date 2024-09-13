@@ -9,15 +9,26 @@ use Illuminate\Support\Facades\Storage;
 
 class RatingServices extends BaseServices
 {
-    public function __construct(RatingModel $model)
+    private $roomTypePacketServices;
+    public function __construct(RatingModel $model,RoomTypePacketServices $roomTypePacketServices)
     {
         parent::__construct($model);
+        $this->roomTypePacketServices = $roomTypePacketServices;
     }
 
     public function index($request)
     {
+        $limit = $request->get("limit",RatingModel::LIMIT_PAGE);
         $query = $this->model;
-        return $query->get();
+
+        $roomTypePacket =  $this->roomTypePacketServices
+            ->getRoomTypePacketByPacketIdAndRoomTypeId($request["room_type_id"],$request["packet_id"]);
+        if(empty($roomTypePacket)){
+            return collect();
+        }
+        $query= $query->where("room_type_packet_id",$roomTypePacket->id);
+        $query->with('customer');
+        return $query->paginate($limit);
     }
 
 

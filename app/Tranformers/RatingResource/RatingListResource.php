@@ -16,6 +16,25 @@ class RatingListResource extends ApiResource
      */
     public function toArray($request)
     {
-        return $this->resource->toArray();
+        $lists = collect();
+        $lists['data'] = collect();
+		$roomTypePacketId = 0;
+        $this->resource->each(function ($guide,$index) use (&$lists,&$roomTypePacketId) {
+			$roomTypePacketId = $guide->room_type_packet_id??null;
+            $lists['data']->push([
+                'index' => $index+1,
+                'id' => $guide->id,
+                'comment' => $guide->comment??"",
+                'rate' => $guide->rate??0,
+                'room_type_packet_id' => $guide->room_type_packet_id??null,
+                "customer"=>$guide->customer,
+                "created_at" => $guide->created_at
+            ]);
+        });
+        $avg = $this->resource->avg('rate');
+        $lists['avg'] = number_format((float) $avg, 2, '.', ''); 
+		$lists['room_type_packet_id'] = $roomTypePacketId;
+		
+        return $lists->toArray();
     }
 }

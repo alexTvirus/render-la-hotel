@@ -18,6 +18,7 @@ class Packet extends BaseModel
     protected $fillable = [
         'base_price',
         'name_packet',
+		'description',
 
         'created_by',
         'updated_by',
@@ -62,6 +63,9 @@ class Packet extends BaseModel
         return $this->hasManyThrough(Room::class,RoomTypePacket::class);
     }
 
+	public function packetImages(){
+        return $this->hasMany(PacketImage::class,'packet_id');
+    }
 
     public function benefits()
     {
