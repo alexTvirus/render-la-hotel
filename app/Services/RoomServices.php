@@ -40,9 +40,9 @@ class RoomServices extends BaseServices
     public function getRoomByRoomTypePacketsAndBooking($roomTypePackets, $bookings)
     {
         $query = $this->model
-            ->whereIn("room_type_packet_id", $roomTypePackets)
+            ->whereIn("room_type_packet_id", $roomTypePackets??[])
             ->whereNotIn('id', function ($query) use ($bookings) {
-                $query->select('room_id')->from('room_booking')->whereIn('booking_id', $bookings);
+                $query->select('room_id')->from('room_booking')->whereIn('booking_id', $bookings??[]);
             });
         $rs = $query->get();
         return $rs;

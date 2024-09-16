@@ -66,7 +66,7 @@ class RoomTypeServices extends BaseServices
                     ->whereNotNull('room_type_packet.start_at')
                     ->whereNotNull('room_type_packet.end_at')
                     ->whereRaw("room_type_packet.start_at >= STR_TO_DATE(?, '%Y-%m-%d')", $start_date);
-            }else{
+            } else {
                 $query = $query
                     ->whereNull('room_type_packet.start_at')
                     ->whereNull('room_type_packet.end_at');
@@ -130,9 +130,7 @@ class RoomTypeServices extends BaseServices
             });
 
             return $roomtypes->paginate($limit);
-        } else if (!empty($request['tour_start_at']) && !empty($request['tour_end_at'])) {
-
-        } else {
+        }  else {
             $roomtypes->each(function ($item, $key) use ($roomtypes, $tour) {
                 // kiem tra xem co phong ung voi id do ko
                 // neu co thi moi hien thi
@@ -188,7 +186,9 @@ class RoomTypeServices extends BaseServices
                         $packet['number_room'] = $roomPacket['number_room'];
                         return true;
                     }
-                    if (!$isTour && $roomType->id == $roomPacket->room_type_id) {
+                    if (!$isTour && $roomType->id == $roomPacket->room_type_id
+                        &&
+                        !$roomPacket['start_at'] && !$roomPacket['end_at']) {
                         return true;
                     }
                     return false;
@@ -196,11 +196,13 @@ class RoomTypeServices extends BaseServices
 
                 })) {
                     $packet['rooms_available'] = collect();
-                    $roomType['rooms_available']->each(function ($room) use (&$packet) {
-                        if ($room['packet_id'] === $packet->id) {
-                            $packet['rooms_available']->push($room);
-                        }
-                    });
+
+                    if ($roomType['rooms_available'])
+                        $roomType['rooms_available']->each(function ($room) use (&$packet) {
+                            if ($room['packet_id'] === $packet->id) {
+                                $packet['rooms_available']->push($room);
+                            }
+                        });
 
                     $newPackets->push($packet);
                 }
@@ -254,6 +256,7 @@ class RoomTypeServices extends BaseServices
     {
         $query_array = $request->query();
         $tour = $query_array['tour'] ?? "";
+        $packet_id = $query_array['packet_id'] ?? "";
         $data = $this->model->where('id', $id)->first();
         if ($data) {
             if (!$data->rooms->isEmpty()) {
@@ -266,16 +269,29 @@ class RoomTypeServices extends BaseServices
 
                     $roomsAvailable = collect();
                     $packetIds = collect();
-                    $rooms->each(function ($room) use ($data, &$packetIds, &$roomsAvailable) {
-                        if ($room->roomTypePacket->room_type_id == $data->id) {
-                            $packet_id = $room->roomTypePacket->packet_id;
-                            $roomsAvailable->push(['packet_id' => $packet_id,
-                                'room_id' => $room->id, 'room_number' => $room->room_number
-                            ]);
-                            $packetIds->push($packet_id);
-                        }
+                    if (empty($packet_id)) {
+                        $rooms->each(function ($room) use ($data, &$packetIds, &$roomsAvailable) {
+                            if ($room->roomTypePacket->room_type_id == $data->id) {
+                                $packet_id = $room->roomTypePacket->packet_id;
+                                $roomsAvailable->push(['packet_id' => $packet_id,
+                                    'room_id' => $room->id, 'room_number' => $room->room_number
+                                ]);
+                                $packetIds->push($packet_id);
+                            }
 
-                    });
+                        });
+                    } else {
+                        $packetIds->push($packet_id);
+                        $rooms->each(function ($room) use ($data, &$roomsAvailable, $packet_id) {
+                            if ($room->roomTypePacket->room_type_id == $data->id
+                                && $room->roomTypePacket->packet_id == $packet_id) {
+                                $roomsAvailable->push(['packet_id' => $room->roomTypePacket->packet_id,
+                                    'room_id' => $room->id, 'room_number' => $room->room_number
+                                ]);
+                            }
+                        });
+                    }
+
                     $data['rooms_available'] = $roomsAvailable;
                     $this->prepareRoomType($data, $packetIds, $tour);
                 } else {

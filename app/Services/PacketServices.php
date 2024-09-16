@@ -5,6 +5,7 @@ namespace App\Services;
 
 
 use App\Models\Packet as PacketModel;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 class PacketServices extends BaseServices
@@ -17,9 +18,11 @@ class PacketServices extends BaseServices
 
     public function index($request)
     {
-
+		$limit = $request->get('limit', PacketModel::LIMIT_PAGE);
+        $query_array = $request->query();
+        $tour = $query_array['tour'] ?? "";
         $query = PacketModel::query();
-
+        //$query = $this->model;
 
         $query->with("packetImages", function ($query) {
             $query->select("id",
@@ -27,6 +30,75 @@ class PacketServices extends BaseServices
                 "url", "name",
                 "description");
         });
+
+        $query = $query->whereHas("roomTypePackets", function ($query) use ($tour) {
+            if (!empty($tour)) {
+                $start_date = Carbon::now()->format('Y-m-d');
+                $query = $query
+                    ->whereNotNull('room_type_packet.start_at')
+                    ->whereNotNull('room_type_packet.end_at')
+                    ->whereRaw("room_type_packet.start_at >= STR_TO_DATE(?, '%Y-%m-%d')", $start_date);
+            } else {
+                $query = $query
+                    ->whereNull('room_type_packet.start_at')
+                    ->whereNull('room_type_packet.end_at');
+            }
+        });
+
+        $query = $query->with("roomTypePackets");
+		$query = $query->with("benefits");
+        $query->select("id", "base_price", "name_packet", "description");
+        $data= $query->get();
+        $this->preparePacket($data,$tour);
+        return $data->paginate($limit);
+    }
+
+    public function preparePacket(&$data,$tour=0)
+    {
+        if( !$tour){
+            $data->each(function ($packet) {
+                unset($packet['roomTypePackets']);
+            });
+        }
+
+        if (!$data->isEmpty() && $tour) {
+            $newData = collect();
+            $data->each(function ($packet) use (&$newData) {
+                $roomPackets = $packet['roomTypePackets'] ?? [];
+                unset($packet['roomTypePackets']);
+
+                $roomPackets->each(function ($roomPacket) use (&$newData, $packet) {
+                    $newPacket = clone $packet;
+                    $newPacket['room_type_id'] = $roomPacket['room_type_id'];
+                    $roomPacket['start_at'] ? ($newPacket['tour_start_at'] = $roomPacket['start_at']
+                    ) : ("");
+                    $roomPacket['end_at'] ? ($newPacket['tour_end_at'] = $roomPacket['end_at']) : ("");
+                    $roomPacket['number_guest'] ? ($newPacket['number_guest'] = $roomPacket['number_guest']) : ("");
+                    $roomPacket['number_room'] ? ($newPacket['number_room'] = $roomPacket['number_room']) : ("");
+                    $newData->push($newPacket);
+                });
+
+
+            });
+            $data = $newData;
+        }
+
+    }
+
+    public function getAll($request)
+    {
+
+        $query = PacketModel::query();
+        //$query = $this->model;
+
+        $query->with("packetImages", function ($query) {
+            $query->select("id",
+                "packet_id",
+                "url", "name",
+                "description");
+        });
+
+
         $query->select("id", "base_price", "name_packet", "description");
         return $query->get();
     }
@@ -42,7 +114,7 @@ class PacketServices extends BaseServices
         $query = $this->model->whereIn('id', $ids)
             ->with(['roomTypePackets' => function ($query) {
                 $query->select('room_type_packet.packet_id', 'room_type_packet.room_type_id',
-                    'room_type_packet.rate', 'room_type_packet.start_at','room_type_packet.end_at',
+                    'room_type_packet.rate', 'room_type_packet.start_at', 'room_type_packet.end_at',
                     'room_type_packet.number_guest', 'room_type_packet.number_room');
             }])
             ->with(['benefits' => function ($query) {

@@ -68,9 +68,9 @@ Route::group(array('prefix' => '/v1'), function () {
         Route::get('/', [AmenityController::class, 'index'])->name('list');
     });
 
-    Route::group(array('prefix' => 'rating', 'as' => 'rating.', 'middleware' => 'auth:api'), function () {
+    Route::group(array('prefix' => 'rating', 'as' => 'rating.'), function () {
         Route::get('/room/{roomTypeId}/packet/{packetId}', [RatingController::class, 'index'])->name('list');
-        Route::post('/', [RatingController::class, 'store'])->name('store');
+        Route::post('/', [RatingController::class, 'store'])->middleware('auth:api')->name('store');
     });
 
     Route::group(array('prefix' => 'user', 'as' => 'user.', 'middleware' => 'auth:api'), function () {
