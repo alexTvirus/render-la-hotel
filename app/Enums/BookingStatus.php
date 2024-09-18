@@ -11,4 +11,5 @@ final class BookingStatus extends Enum
     const COMPLETED   =   2;
     const PARTIALLY_PAID   =   3;
     const CANCEL    =   4;
+    const PENDING_CANCEL = 5;
 }

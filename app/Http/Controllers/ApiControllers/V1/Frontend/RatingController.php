@@ -7,6 +7,7 @@ use App\Http\Controllers\BaseController;
 use App\Services\RatingServices;
 use App\Tranformers\RatingResource\RatingDetailResource;
 use App\Tranformers\RatingResource\RatingListResource;
+use App\Tranformers\RatingResource\RatingRoomListResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -21,12 +22,19 @@ class RatingController extends BaseController
         parent::__construct();
     }
 
-    public function index(Request $request,$roomTypeId,$packetId)
+    public function index(Request $request)
+    {
+        $lists = $this->ratingServices->index($request);
+        return (new RatingListResource($lists));
+
+    }
+
+    public function ratingRoom(Request $request,$roomTypeId,$packetId)
     {
         $request['room_type_id'] =$roomTypeId;
         $request['packet_id'] =$packetId;
         $lists = $this->ratingServices->index($request);
-        return (new RatingListResource($lists))->additional([
+        return (new RatingRoomListResource($lists))->additional([
             'total' => $lists->total(),
             'lastPage' => $lists->lastPage(),
             'currentPage' => $lists->currentPage(),

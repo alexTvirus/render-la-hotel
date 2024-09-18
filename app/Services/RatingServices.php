@@ -5,12 +5,14 @@ namespace App\Services;
 
 
 use App\Models\Rating as RatingModel;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 class RatingServices extends BaseServices
 {
     private $roomTypePacketServices;
-    public function __construct(RatingModel $model,RoomTypePacketServices $roomTypePacketServices)
+
+    public function __construct(RatingModel $model, RoomTypePacketServices $roomTypePacketServices)
     {
         parent::__construct($model);
         $this->roomTypePacketServices = $roomTypePacketServices;
@@ -18,17 +20,40 @@ class RatingServices extends BaseServices
 
     public function index($request)
     {
-        $limit = $request->get("limit",RatingModel::LIMIT_PAGE);
+        $limit = $request->get("limit", "");
         $query = $this->model;
+        $query_array = $request->query();
+        $rate = $query_array['rate'] ?? "";
+        $roomTypeid = $query_array['room_type_id'] ?? "";
 
-        $roomTypePacket =  $this->roomTypePacketServices
-            ->getRoomTypePacketByPacketIdAndRoomTypeId($request["room_type_id"],$request["packet_id"]);
-        if(empty($roomTypePacket)){
-            return collect();
+        $room_type_id = $request->get("room_type_id");
+        $packet_id = $request->get("packet_id");
+        if (!empty($room_type_id) && !empty($packet_id)) {
+            $roomTypePacket = $this->roomTypePacketServices
+                ->getRoomTypePacketByPacketIdAndRoomTypeId($request["room_type_id"], $request["packet_id"]);
+            if (empty($roomTypePacket)) {
+                return collect();
+            }
+            $query = $query->where("room_type_packet_id", $roomTypePacket->id);
+            $query = $query->with('customer');
         }
-        $query= $query->where("room_type_packet_id",$roomTypePacket->id);
-        $query->with('customer');
-        return $query->paginate($limit);
+        if (!empty($rate)) {
+            $query = $query->where("rate", $rate);
+        }
+        if (!empty($roomTypeid)) {
+            $query = $query->with(['roomTypePacket' => function ($query) use ($roomTypeid) {
+                $query = $query->where("room_type_packet.room_type_id", $roomTypeid);
+            }]);
+        }
+
+        $this->timeCondition($request,$query,"ratings");
+
+
+//        $query->get();
+//        $this->model->where("dsd",12)->get();
+
+        return empty($limit) ? ($query->get()) : ($query->paginate($limit));
+
     }
 
 
@@ -41,11 +66,11 @@ class RatingServices extends BaseServices
     // todo: khi nguời dùng thay đổi rating , thì phải cập nhật bảng room type packet
     public function save(array $attributes)
     {
-        if(empty($attributes['room_type_packet_id'])){
+        if (empty($attributes['room_type_packet_id'])) {
             $roomTypePacketServices = app()->make(RoomTypePacketServices::class);
             $roomTypePacket = $roomTypePacketServices
-                ->getRoomTypePacketByPacketIdAndRoomTypeId($attributes["room_type_id"],$attributes["packet_id"]);
-            if(empty($roomTypePacket)){
+                ->getRoomTypePacketByPacketIdAndRoomTypeId($attributes["room_type_id"], $attributes["packet_id"]);
+            if (empty($roomTypePacket)) {
                 return null;
             }
             $attributes['room_type_packet_id'] = $roomTypePacket->id;

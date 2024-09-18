@@ -11,6 +11,7 @@ use App\Http\Controllers\ApiControllers\V1\Frontend\UserController;
 use App\Http\Controllers\ApiControllers\V1\Frontend\RatingController;
 use App\Http\Controllers\ApiControllers\V1\Auth\AuthController;
 use App\Http\Controllers\ApiControllers\V1\Auth\VerificationController;
+use App\Http\Controllers\ApiControllers\V1\Frontend\DashBoardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +25,8 @@ use App\Http\Controllers\ApiControllers\V1\Auth\VerificationController;
 */
 Route::group(array('prefix' => '/test', 'as' => 'test'), function () {
     $x = Carbon::now()->format('Y-m-d');
+    $x = Carbon::create()->year(2024)->month(1)->firstOfQuarter();
+    $x = Carbon::create()->year(2024)->month(1)->endOfQuarter();
 //    $roomservice =  app()->make(\App\Services\RoomTypeServices::class);
 //    $request['checkin_at'] = "2024-05-16 00:00:00";
 //    $request['checkout_at'] ="2024-05-17 00:00:00";
@@ -69,8 +72,11 @@ Route::group(array('prefix' => '/v1'), function () {
     });
 
     Route::group(array('prefix' => 'rating', 'as' => 'rating.'), function () {
-        Route::get('/room/{roomTypeId}/packet/{packetId}', [RatingController::class, 'index'])->name('list');
-        Route::post('/', [RatingController::class, 'store'])->middleware('auth:api')->name('store');
+        Route::get('/room/{roomTypeId}/packet/{packetId}', [RatingController::class, 'ratingRoom'])->name('ratingRoom');
+        Route::get('/', [RatingController::class, 'index'])->name('list');
+        Route::post('/', [RatingController::class, 'store'])
+//            ->middleware('auth:api')
+            ->name('store');
     });
 
     Route::group(array('prefix' => 'user', 'as' => 'user.', 'middleware' => 'auth:api'), function () {
@@ -100,7 +106,7 @@ Route::group(array('prefix' => '/v1'), function () {
 
 
     Route::group(array('prefix' => 'admin'), function () {
-
+        Route::get('/dashboard', [DashBoardController::class, 'index'])->name('list');
     });
 
     Route::group(['prefix' => '/auth'], function () {

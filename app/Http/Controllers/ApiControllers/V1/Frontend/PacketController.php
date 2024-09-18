@@ -23,6 +23,11 @@ class PacketController extends BaseController
 
     public function index(Request $request)
     {
+        $request['loadRelation'] = [
+            "roomTypePackets",
+            "benefits",
+            "packetImages"
+        ];
         $lists = $this->packetServices->index($request);
         return (new PacketListResource($lists));
     }

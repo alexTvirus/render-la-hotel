@@ -1,12 +1,12 @@
 <?php
 
 
-namespace App\Tranformers\RatingResource;
+namespace App\Tranformers\DashBoardResource;
 
 
 use App\Tranformers\ApiResource;
 
-class RatingListResource extends ApiResource
+class DashBoardListResource extends ApiResource
 {
     /**
      * Transform the resource collection into an array.
@@ -16,7 +16,6 @@ class RatingListResource extends ApiResource
      */
     public function toArray($request)
     {
-
         return $this->resource->toArray();
     }
 }

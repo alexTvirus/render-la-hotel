@@ -10,7 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Database\Eloquent\Builder;
 class User extends Authenticatable implements JWTSubject,MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -66,5 +66,15 @@ class User extends Authenticatable implements JWTSubject,MustVerifyEmail
 
     function bookings(){
         return $this->hasMany(Booking::class,'customer_id');
+    }
+
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('isActive', 1);
+    }
+
+    public function scopeVerified(Builder $query): void
+    {
+        $query->whereNotNull('email_verified_at');
     }
 }

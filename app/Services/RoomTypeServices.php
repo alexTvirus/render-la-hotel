@@ -238,8 +238,8 @@ class RoomTypeServices extends BaseServices
 
         });
 
-        $max = $packets->max("rating");
-        $roomType['rating'] = $max;
+        $avg = $packets->avg("rating");
+        $roomType['rating'] = $avg;
         unset($roomType['ratings']);
     }
 

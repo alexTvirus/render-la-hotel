@@ -18,18 +18,22 @@ class PacketServices extends BaseServices
 
     public function index($request)
     {
-		$limit = $request->get('limit', PacketModel::LIMIT_PAGE);
+        $limit = $request->get("limit", "");
         $query_array = $request->query();
         $tour = $query_array['tour'] ?? "";
+        $relations = $request->get("loadRelation", []);
         $query = PacketModel::query();
         //$query = $this->model;
 
-        $query->with("packetImages", function ($query) {
-            $query->select("id",
-                "packet_id",
-                "url", "name",
-                "description");
-        });
+        if (!empty($relations) && !empty($relations['packetImages'])) {
+            $query->with("packetImages", function ($query) {
+                $query->select("id",
+                    "packet_id",
+                    "url", "name",
+                    "description");
+            });
+        }
+
 
         $query = $query->whereHas("roomTypePackets", function ($query) use ($tour) {
             if (!empty($tour)) {
@@ -45,17 +49,22 @@ class PacketServices extends BaseServices
             }
         });
 
-        $query = $query->with("roomTypePackets");
-		$query = $query->with("benefits");
+        if (!empty($relations)) {
+            foreach ($relations as $key => $value) {
+                $query = $query->with($value);
+            }
+        }
+
         $query->select("id", "base_price", "name_packet", "description");
-        $data= $query->get();
-        $this->preparePacket($data,$tour);
-        return $data->paginate($limit);
+        $data = $query->get();
+        $this->preparePacket($data, $tour);
+
+        return empty($limit) ? ($data) : ($data->paginate($limit));
     }
 
-    public function preparePacket(&$data,$tour=0)
+    public function preparePacket(&$data, $tour = 0)
     {
-        if( !$tour){
+        if (!$tour) {
             $data->each(function ($packet) {
                 unset($packet['roomTypePackets']);
             });
@@ -69,6 +78,7 @@ class PacketServices extends BaseServices
 
                 $roomPackets->each(function ($roomPacket) use (&$newData, $packet) {
                     $newPacket = clone $packet;
+                    $newPacket['room_type_packet_id'] = $roomPacket['id'];
                     $newPacket['room_type_id'] = $roomPacket['room_type_id'];
                     $roomPacket['start_at'] ? ($newPacket['tour_start_at'] = $roomPacket['start_at']
                     ) : ("");

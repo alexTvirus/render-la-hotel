@@ -3,6 +3,7 @@
 namespace App\Models;
 
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
@@ -48,6 +49,11 @@ class Booking extends BaseModel
 //            ->generateSlugsFrom('comic_name')
 //            ->saveSlugsTo('slug');
 //    }
+
+    public function scopeStatus(Builder $query,$status): void
+    {
+        $query->where('status',$status);
+    }
 
     public function roomBookings(){
         return $this->hasMany(RoomBooking::class,'booking_id');

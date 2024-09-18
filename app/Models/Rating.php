@@ -16,7 +16,7 @@ class Rating extends BaseModel
 {
 
     protected $table = "ratings";
-    protected $fillable =[
+    protected $fillable = [
         'comment',
         'rate',
         'customer_id',
@@ -37,6 +37,8 @@ class Rating extends BaseModel
     ];
 
 
+
+
     public static function boot()
     {
         parent::boot();
@@ -44,7 +46,7 @@ class Rating extends BaseModel
         static::created(function ($model) {
             $roomTypePacketServices = app()->make(RoomTypePacketServices::class);
             $room_type_packet = $roomTypePacketServices->show($model->room_type_packet_id);
-            if($room_type_packet){
+            if ($room_type_packet) {
                 $ratings = $room_type_packet->ratings;
                 $room_type_packet->rate = $ratings->avg('rate');
                 $roomTypePacketServices->save($room_type_packet->toArray());
@@ -60,7 +62,13 @@ class Rating extends BaseModel
 //    }
 
 
-    public function customer(){
-        return $this->belongsTo(User::class,'customer_id');
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    public function roomTypePacket()
+    {
+        return $this->belongsTo(RoomTypePacket::class, 'room_type_packet_id');
     }
 }

@@ -39,7 +39,13 @@ class BookingServices extends BaseServices
     public function index($customerId, $request)
     {
         $limit = $request->get("limit", BookingModel::LIMIT_PAGE);
+        $query_array = $request->query();
         $query = $this->model;
+        $status = $query_array['status'] ?? "";
+
+        if(!empty($status)){
+            $query->bookingStatus($status);
+        }
 
         if ($customerId && !empty($customerId)) {
             $query = $query->where("customer_id", $customerId);
@@ -185,9 +191,9 @@ class BookingServices extends BaseServices
         if ($paymentAmount == 0) {
             $booking["status"] = BookingStatus::PENDING;
         } else if ($totalPrice > $paymentAmount) {
-            $booking["status"] = BookingStatus::PARTIALLY_PAID;
+            $booking["status"] = BookingStatus::PENDING;
         } else if ($paymentAmount >= $totalPrice) {
-            $booking["status"] = BookingStatus::COMPLETED;
+            $booking["status"] = BookingStatus::PENDING;
         }
 
         $booking["customer_id"] = $this->getCurrentUser()->id;

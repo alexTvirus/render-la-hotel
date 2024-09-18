@@ -11,6 +11,12 @@ class BaseModel extends Model
 {
     use HasFactory;
     const LIMIT_PAGE = 10;
+    const QUATER_OF_YEAR = [
+        1 => 1,
+        2 => 4,
+        3 => 7,
+        4 => 10
+    ];
     public static function boot()
     {
         parent::boot();
