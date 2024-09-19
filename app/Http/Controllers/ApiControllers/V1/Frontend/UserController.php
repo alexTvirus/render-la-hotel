@@ -21,6 +21,23 @@ class UserController extends BaseController
         $this->userServices = $userServices;
         parent::__construct();
     }
+	
+	public function index(Request $request)
+    {
+        $lists = $this->userServices->index($request);
+		
+		if ($lists instanceof \Illuminate\Pagination\LengthAwarePaginator){
+            return (new UserListResource($lists))->additional([
+            'totalPage' => $lists->total(),
+            'lastPage' => $lists->lastPage(),
+            'currentPage' => $lists->currentPage(),
+            'perPage' => (int)$lists->perPage(),
+			]);
+
+        }
+        return (new UserListResource($lists));
+	
+    }
 
     public function update(Request $request,$id)
     {

@@ -239,6 +239,7 @@ class RoomTypeServices extends BaseServices
         });
 
         $avg = $packets->avg("rating");
+        $avg = number_format((float) $avg, 2, '.', '');
         $roomType['rating'] = $avg;
         unset($roomType['ratings']);
     }

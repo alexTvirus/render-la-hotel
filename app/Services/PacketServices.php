@@ -21,6 +21,7 @@ class PacketServices extends BaseServices
         $limit = $request->get("limit", "");
         $query_array = $request->query();
         $tour = $query_array['tour'] ?? "";
+		$checkAvailable = $query_array['checkAvailable'] ?? 0;
         $relations = $request->get("loadRelation", []);
         $query = PacketModel::query();
         //$query = $this->model;
@@ -57,13 +58,15 @@ class PacketServices extends BaseServices
 
         $query->select("id", "base_price", "name_packet", "description");
         $data = $query->get();
-        $this->preparePacket($data, $tour);
+        $this->preparePacket($data, $tour,$checkAvailable);
 
         return empty($limit) ? ($data) : ($data->paginate($limit));
     }
 
-    public function preparePacket(&$data, $tour = 0)
+    public function preparePacket(&$data, $tour = 0 ,$checkAvailable =0)
     {
+
+		
         if (!$tour) {
             $data->each(function ($packet) {
                 unset($packet['roomTypePackets']);
@@ -72,11 +75,14 @@ class PacketServices extends BaseServices
 
         if (!$data->isEmpty() && $tour) {
             $newData = collect();
-            $data->each(function ($packet) use (&$newData) {
+			$roomBookingServices = app()->make(RoomBookingServices::class);
+            $data->each(function ($packet) use (&$newData,$roomBookingServices,$checkAvailable) {
                 $roomPackets = $packet['roomTypePackets'] ?? [];
                 unset($packet['roomTypePackets']);
+				
 
-                $roomPackets->each(function ($roomPacket) use (&$newData, $packet) {
+				
+                $roomPackets->each(function ($roomPacket) use (&$newData, $packet,$roomBookingServices,$checkAvailable) {
                     $newPacket = clone $packet;
                     $newPacket['room_type_packet_id'] = $roomPacket['id'];
                     $newPacket['room_type_id'] = $roomPacket['room_type_id'];
@@ -85,6 +91,11 @@ class PacketServices extends BaseServices
                     $roomPacket['end_at'] ? ($newPacket['tour_end_at'] = $roomPacket['end_at']) : ("");
                     $roomPacket['number_guest'] ? ($newPacket['number_guest'] = $roomPacket['number_guest']) : ("");
                     $roomPacket['number_room'] ? ($newPacket['number_room'] = $roomPacket['number_room']) : ("");
+					
+					if($checkAvailable){
+						$newPacket['isBooked'] = $roomBookingServices->checkTourIsBooked($roomPacket['id']);
+					}
+					
                     $newData->push($newPacket);
                 });
 

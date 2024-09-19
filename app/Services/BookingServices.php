@@ -36,15 +36,15 @@ class BookingServices extends BaseServices
         $this->packetServices = $packetServices;
     }
 
-    public function index($customerId, $request)
+    public function index($request, $customerId = null)
     {
-        $limit = $request->get("limit", BookingModel::LIMIT_PAGE);
+        $limit = $request->get("limit");
         $query_array = $request->query();
         $query = $this->model;
         $status = $query_array['status'] ?? "";
 
-        if(!empty($status)){
-            $query->bookingStatus($status);
+        if (!empty($status)) {
+            $query = $query->where('status', $status);
         }
 
         if ($customerId && !empty($customerId)) {
@@ -66,19 +66,23 @@ class BookingServices extends BaseServices
         });
         $query->select("id", "checkout_at", "checkin_at", "total_price"
             , "number_guests", "status", "cancel_reason");
-        $rs = $query->orderBy('updated_at', 'desc')
-            ->paginate($limit);
+
+        $query = $query->orderBy('updated_at', 'desc');
+
+        $rs = empty($limit) ? ($query->get()) : ($query->paginate($limit));
 
         $this->prepareRoom($rs);
+
         return $rs;
     }
 
     public function prepareRoom(&$booking)
     {
         $booking->each(function ($item) {
-            $this->roomServices->getRoomByIdsAndPacket($item->rooms);
+             $this->roomServices->getRoomByIdsAndPacket($item);
         });
     }
+	
 
     public function getBookingByNotAvailble($param)
     {
@@ -153,7 +157,7 @@ class BookingServices extends BaseServices
         }
         $roomTypePrice = $roomType->base_price ?? 0;
         $tmp_packets->each(function ($packet) use (&$totalPrice, $roomTypePrice, $bookingPeriodDays, $hashCheck) {
-            $totalPrice += (($packet->base_price) + $roomTypePrice)* $hashCheck[$packet->id] * $bookingPeriodDays;
+            $totalPrice += (($packet->base_price) + $roomTypePrice) * $hashCheck[$packet->id] * $bookingPeriodDays;
         });
 
         $totalPrice = ($totalPrice * $gstRate) + $totalPrice;
@@ -215,7 +219,7 @@ class BookingServices extends BaseServices
             $roomBooking = [
                 "booking_id" => $booking->id,
                 "room_id" => $room->id,
-				"room_type_packet_id" => $room->room_type_packet_id
+                "room_type_packet_id" => $room->room_type_packet_id
             ];
 
             $roomBooking = $this->roomBookingServices->save($roomBooking);
@@ -250,9 +254,9 @@ class BookingServices extends BaseServices
 
         $booking->rooms = $roomAvailable;
 
-        $this->roomServices->getRoomByIdsAndPacket($booking->rooms);
+        $this->roomServices->getRoomByIdsAndPacket($booking);
 
-        Mail::to($payment->email)->send(new BookingMail($booking, $payment));
+        Mail::to($payment->email)->send(new BookingMail($booking,$payment, "Thông tin đơn đặt phòng"));
 
         return $booking;
     }
@@ -265,18 +269,27 @@ class BookingServices extends BaseServices
 
     public function save(array $attributes)
     {
+
+        $mailSubject = false;
+        $entity = null;
         if (!empty($attributes['id'])) {
             $entity = $this->model->where('id', $attributes['id'])->first();
             if ($entity) {
                 $entity->fill($attributes)->save();
-                return $entity;
-            } else {
-                return null;
+                if ($entity->status === BookingStatus::CANCEL) {
+                    $mailSubject = "Đơn đặt phòng đã bị từ chối";
+                }
+                if ($entity->status === BookingStatus::COMPLETED) {
+                    $mailSubject = "Đơn đặt phòng đã thành công";
+                }
             }
         } else {
             $entity = $this->model->create($attributes);
-            return $entity;
         }
+        if ($mailSubject) {
+            Mail::to($entity->payments[0]->email)->send(new BookingMail($entity, $entity->payments[0], $mailSubject));
+        }
+        return $entity;
     }
 
     public function delete($id)

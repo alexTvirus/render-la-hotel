@@ -69,7 +69,7 @@ class DashBoardServices extends BaseServices
 //        $bookingQuery->whereNotIn('room_type_packet_id',$tourIds);
         $booked = $bookingQuery
             ->whereHas('booking' , function ($query) use($tourIds,$request) {
-                $query->where('status',BookingStatus::PENDING);
+                $query->where('status',BookingStatus::COMPLETED);
                 $this->timeCondition($request, $query, app(Booking::class)->getTable());
             })
             ->count();
@@ -89,7 +89,7 @@ class DashBoardServices extends BaseServices
 
         // todo:
         // lay tat ca tour dc dat theo (nam/quy/thang)
-        $bookingTourQuery = Booking::status(BookingStatus::PENDING);
+        $bookingTourQuery = Booking::status(BookingStatus::COMPLETED);
         $this->timeCondition($request, $bookingTourQuery, app(Booking::class)->getTable());
         $tourIds = $tours->pluck('room_type_packet_id');
         $booked = $bookingTourQuery
@@ -106,7 +106,7 @@ class DashBoardServices extends BaseServices
         $start_date = Carbon::create()->year($year)->month(1)->startOfMonth()->format('Y-m-d');
         $end_date = Carbon::create()->year($year)->month(12)->endOfMonth()->format('Y-m-d');
     
-        $bookingTourQuery = Booking::status(BookingStatus::PENDING);
+        $bookingTourQuery = Booking::status(BookingStatus::COMPLETED);
         //$this->timeCondition($request, $bookingTourQuery, class_basename(Booking::class));
         $finalChartData = $bookingTourQuery
         ->selectRaw('DATE_FORMAT(updated_at, "%m") AS month, 

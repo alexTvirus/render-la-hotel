@@ -20,8 +20,10 @@ class RoomServices extends BaseServices
 
     public function index($request)
     {
+		$limit = $request->get("limit");
         $query = $this->model;
-        return $query->get();
+		$rs = empty($limit) ? ($query->get()) : ($query->paginate($limit));
+        return $rs;
     }
 
 
@@ -48,12 +50,16 @@ class RoomServices extends BaseServices
         return $rs;
     }
 
-    public function getRoomByIdsAndPacket(&$rooms){
-        $room_type_packets = $rooms->pluck("room_type_packet_id");
+    public function getRoomByIdsAndPacket(&$booking){
+		
+        $room_type_packets = $booking->rooms->pluck("room_type_packet_id");
 
         $query = Packet:: select(
             "packets.id",
             "room_type_packet.id as room_type_packet_id",
+			"room_type_packet.start_at as room_type_packet_start_at",
+			"room_type_packet.end_at as room_type_packet_end_at",
+			"room_type_packet.number_room as room_type_packet_number_room",
 			"room_types.name as room_type_name",
             "packets.name_packet"
             );
@@ -63,15 +69,28 @@ class RoomServices extends BaseServices
             ->whereIn('room_type_packet.id', $room_type_packets)
         ;
         $room_type_packets = $query->get();
+		
+		$isTour = false;
+		$tour=[];
 
-        $rooms->each(function ($room)use($room_type_packets){
-            $room_type_packets->each(function ($room_type_packet)use($room){
+        $booking->rooms->each(function ($room)use($room_type_packets,&$tour,&$isTour){
+            $room_type_packets->each(function ($room_type_packet)use($room,&$tour,&$isTour){
                 if($room->room_type_packet_id == $room_type_packet->room_type_packet_id){
                     $room->packet = $room_type_packet->name_packet;
 					$room->room_type = $room_type_packet->room_type_name;
+					if(!$isTour){
+						if($room_type_packet->room_type_packet_start_at && $room_type_packet->room_type_packet_end_at){
+							$isTour = true;
+							$tour["tour_start_at"] = $room_type_packet->room_type_packet_start_at;
+							$tour["tour_end_at"] = $room_type_packet->room_type_packet_end_at;
+							$tour["tour_number_room"] = $room_type_packet->room_type_packet_number_room;
+						}
+					}
+					
                 }
             });
         });
+		$booking['tour'] = $tour;
 
     }
 

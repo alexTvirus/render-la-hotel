@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ApiControllers\V1\Frontend;
+namespace App\Http\Controllers\ApiControllers\V1\Backend;
 
 use App\Http\Controllers\BaseController;
 
@@ -24,10 +24,9 @@ class BookingController extends BaseController
         parent::__construct();
     }
 
-    public function index(Request $request, $customerId)
+    public function index(Request $request)
     {
-        $lists = $this->bookingServices->index($request, $customerId);
-		
+        $lists = $this->bookingServices->index($request);
 		if ($lists instanceof \Illuminate\Pagination\LengthAwarePaginator){
             return (new BookingListResource($lists))->additional([
             'totalPage' => $lists->total(),
@@ -38,10 +37,9 @@ class BookingController extends BaseController
 
         }
         return (new BookingListResource($lists));
-	
     }
 
-    public function show(Request $request, $customerId, $bookingId)
+    public function show(Request $request, $bookingId)
     {
         try {
             $entity = $this->bookingServices->show($bookingId);
@@ -51,7 +49,7 @@ class BookingController extends BaseController
         }
     }
 
-    public function update(Request $request, $customerId, $bookingId)
+    public function update(Request $request, $bookingId)
     {
         $info = $request->only([
             'id',

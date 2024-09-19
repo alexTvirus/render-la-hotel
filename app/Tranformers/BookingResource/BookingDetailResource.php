@@ -16,11 +16,7 @@ class BookingDetailResource extends ApiResource
      */
     public function toArray($request)
     {
-
-        $this->resource->each(function ($guide, $index) {
-            $guide['index'] = $index + 1;
-            $guide['canCancel'] = true;
-        });
+        $this->resource['canCancel'] = true;
         return $this->resource->toArray();
     }
 }

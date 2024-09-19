@@ -11,7 +11,11 @@ use App\Http\Controllers\ApiControllers\V1\Frontend\UserController;
 use App\Http\Controllers\ApiControllers\V1\Frontend\RatingController;
 use App\Http\Controllers\ApiControllers\V1\Auth\AuthController;
 use App\Http\Controllers\ApiControllers\V1\Auth\VerificationController;
-use App\Http\Controllers\ApiControllers\V1\Frontend\DashBoardController;
+use App\Http\Controllers\ApiControllers\V1\Backend\DashBoardController ;
+use App\Http\Controllers\ApiControllers\V1\Backend\BookingController as BEBookingController;
+use App\Http\Controllers\ApiControllers\V1\Backend\RoomController as BERoomController;
+use App\Http\Controllers\ApiControllers\V1\Backend\RatingController as BERatingController;
+use App\Http\Controllers\ApiControllers\V1\Backend\PacketController as BEPacketController;
 
 /*
 |--------------------------------------------------------------------------
@@ -107,6 +111,30 @@ Route::group(array('prefix' => '/v1'), function () {
 
     Route::group(array('prefix' => 'admin'), function () {
         Route::get('/dashboard', [DashBoardController::class, 'index'])->name('list');
+        Route::group(array('prefix' => 'bookings', 'as' => 'bookings.'), function () {
+            Route::get('/', [BEBookingController::class, 'index'])->name('index');
+            Route::get('/{bookingId}', [BEBookingController::class, 'show'])->name('show');
+            Route::patch('/{bookingId}', [BEBookingController::class, 'update'])->name('patch');
+        });
+		 Route::group(array('prefix' => 'rooms', 'as' => 'rooms.'), function () {
+            Route::get('/', [BERoomController::class, 'index'])->name('index');
+            Route::get('/{Id}', [BERoomController::class, 'show'])->name('show');
+            Route::patch('/{Id}', [BERoomController::class, 'update'])->name('patch');
+        });
+		
+		Route::group(array('prefix' => 'ratings', 'as' => 'ratings.'), function () {
+            Route::get('/', [BERatingController::class, 'index'])->name('index');
+            Route::get('/{Id}', [BERatingController::class, 'show'])->name('show');
+            Route::patch('/{Id}', [BERatingController::class, 'update'])->name('patch');
+        });
+		
+		Route::group(array('prefix' => 'packets', 'as' => 'packets.'), function () {
+            Route::get('/', [BEPacketController::class, 'index'])->name('index');
+            Route::get('/{Id}', [BERatingController::class, 'show'])->name('show');
+            Route::patch('/{Id}', [BERatingController::class, 'update'])->name('patch');
+        });
+		
+		
     });
 
     Route::group(['prefix' => '/auth'], function () {

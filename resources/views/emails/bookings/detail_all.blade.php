@@ -1,5 +1,4 @@
 @component('mail::message')
-# Xác Nhận Đặt Phòng
 
 Xin chào {{ $booking->customer_name }},
 

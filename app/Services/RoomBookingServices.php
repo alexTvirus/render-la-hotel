@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Models\RoomBooking as RoomBookingModel;
 use Illuminate\Support\Facades\Storage;
-
+use App\Enums\BookingStatus;
 class RoomBookingServices extends BaseServices
 {
 
@@ -20,11 +20,26 @@ class RoomBookingServices extends BaseServices
         $query = $this->model;
         return $query->get();
     }
-
-    public function show($id)
+	
+	public function show($id)
     {
         $data = $this->model->where('id', $id)->first();
         return $data;
+    }
+
+    public function checkTourIsBooked($room_type_packet_id)
+    {
+		 $query = $this->model
+            ->join('bookings', function ($join){
+                $join->on('bookings.id', '=', 'room_booking.booking_id')
+                    ->where("bookings.status",BookingStatus::COMPLETED);
+
+            })
+			->where('room_type_packet_id', $room_type_packet_id);
+
+        $data = $query->get();
+		
+        return !($data->isEmpty());
     }
 
     public function getNotAvailableByBooking($param)

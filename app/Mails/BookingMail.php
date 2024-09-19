@@ -21,8 +21,11 @@ class BookingMail extends Mailable
 
     private $booking;
     private $payment;
-    public function __construct($booking,$payment)
+    private $title;
+
+    public function __construct($booking,$payment,$title)
     {
+        $this->title=$title;
         $this->booking=$booking;
         $this->payment=$payment;
     }
@@ -34,27 +37,9 @@ class BookingMail extends Mailable
      */
     public function build()
     {
-        $data = [
-            "name" => "test",
-            "code" => "123",
-            "note" => "note",
-            "items" => [
-                [
-                    "key"=>"item1",
-                    "value"=>"value1"
-                ],
-                [
-                    "key"=>"item2",
-                    "value"=>"value2"
-                ]
-            ]
-        ];
-
-        $generalRegulation['note_email'] = "note_email";
-
         // tự code header vào footer và tự css
         return $this->markdown('emails.bookings.detail_all')
-            ->subject('Booking confirm ')
+            ->subject($this->title)
             ->with([
                 'booking' => $this->booking,
                 'payment' => $this->payment,

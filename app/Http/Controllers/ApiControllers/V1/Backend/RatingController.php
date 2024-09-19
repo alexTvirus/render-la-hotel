@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ApiControllers\V1\Frontend;
+namespace App\Http\Controllers\ApiControllers\V1\Backend;
 
 use App\Http\Controllers\BaseController;
 
@@ -25,7 +25,6 @@ class RatingController extends BaseController
     public function index(Request $request)
     {
         $lists = $this->ratingServices->index($request);
-       
 		if ($lists instanceof \Illuminate\Pagination\LengthAwarePaginator){
             return (new RatingListResource($lists))->additional([
             'totalPage' => $lists->total(),
@@ -36,7 +35,6 @@ class RatingController extends BaseController
 
         }
         return (new RatingListResource($lists));
-
     }
 
     public function ratingRoom(Request $request,$roomTypeId,$packetId)
@@ -44,16 +42,12 @@ class RatingController extends BaseController
         $request['room_type_id'] =$roomTypeId;
         $request['packet_id'] =$packetId;
         $lists = $this->ratingServices->index($request);
-        if ($lists instanceof \Illuminate\Pagination\LengthAwarePaginator){
-            return (new RatingRoomListResource($lists))->additional([
-            'totalPage' => $lists->total(),
+        return (new RatingRoomListResource($lists))->additional([
+            'total' => $lists->total(),
             'lastPage' => $lists->lastPage(),
             'currentPage' => $lists->currentPage(),
             'perPage' => (int)$lists->perPage(),
-			]);
-
-        }
-        return (new RatingRoomListResource($lists));
+        ]);
 
     }
 

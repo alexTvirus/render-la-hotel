@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ApiControllers\V1\Frontend;
+namespace App\Http\Controllers\ApiControllers\V1\Backend;
 
 use App\Http\Controllers\BaseController;
 
@@ -28,8 +28,9 @@ class PacketController extends BaseController
             "benefits",
             "packetImages"
         ];
+		 $request['checkAvailable'] = 1;
         $lists = $this->packetServices->index($request);
-				if ($lists instanceof \Illuminate\Pagination\LengthAwarePaginator){
+		if ($lists instanceof \Illuminate\Pagination\LengthAwarePaginator){
             return (new PacketListResource($lists))->additional([
             'totalPage' => $lists->total(),
             'lastPage' => $lists->lastPage(),
