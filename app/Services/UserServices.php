@@ -20,9 +20,16 @@ class UserServices extends BaseServices
 
     public function index($request)
     {
+		$limit = $request->get("limit", "");
         $query = $this->model;
-        $query->with('bookings');
-        return $query->get();
+        $relations = $request->get("loadRelation", []);
+        if (!empty($relations)) {
+            foreach ($relations as $key => $value) {
+                $query = $query->with($value);
+            }
+        }
+        $data = empty($limit) ? ($query->get()) : ($query->paginate($limit));
+		return $data;
     }
 
 

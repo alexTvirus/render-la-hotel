@@ -17,8 +17,10 @@ class AmenityServices extends BaseServices
 
     public function index($request)
     {
+		$limit = $request->get("limit", "");
         $query = $this->model;
-        return $query->get();
+         $data = empty($limit) ? ($query->get()) : ($query->paginate($limit));
+		return $data;
     }
 
 

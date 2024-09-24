@@ -15,7 +15,12 @@ use App\Http\Controllers\ApiControllers\V1\Backend\DashBoardController ;
 use App\Http\Controllers\ApiControllers\V1\Backend\BookingController as BEBookingController;
 use App\Http\Controllers\ApiControllers\V1\Backend\RoomController as BERoomController;
 use App\Http\Controllers\ApiControllers\V1\Backend\RatingController as BERatingController;
+
 use App\Http\Controllers\ApiControllers\V1\Backend\PacketController as BEPacketController;
+use App\Http\Controllers\ApiControllers\V1\Backend\UserController as BEUserController;
+use App\Http\Controllers\ApiControllers\V1\Backend\AmenityController as BEAmenityController;
+use App\Http\Controllers\ApiControllers\V1\Backend\RoomTypeController as BERoomTypeController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -121,20 +126,38 @@ Route::group(array('prefix' => '/v1'), function () {
             Route::get('/{Id}', [BERoomController::class, 'show'])->name('show');
             Route::patch('/{Id}', [BERoomController::class, 'update'])->name('patch');
         });
-		
+
 		Route::group(array('prefix' => 'ratings', 'as' => 'ratings.'), function () {
             Route::get('/', [BERatingController::class, 'index'])->name('index');
             Route::get('/{Id}', [BERatingController::class, 'show'])->name('show');
             Route::patch('/{Id}', [BERatingController::class, 'update'])->name('patch');
         });
-		
+
 		Route::group(array('prefix' => 'packets', 'as' => 'packets.'), function () {
             Route::get('/', [BEPacketController::class, 'index'])->name('index');
             Route::get('/{Id}', [BERatingController::class, 'show'])->name('show');
             Route::patch('/{Id}', [BERatingController::class, 'update'])->name('patch');
         });
-		
-		
+
+		Route::group(array('prefix' => 'amenities', 'as' => 'amenities.'), function () {
+            Route::get('/', [BEAmenityController::class, 'index'])->name('index');
+            Route::get('/{Id}', [BEAmenityController::class, 'show'])->name('show');
+            Route::patch('/{Id}', [BEAmenityController::class, 'update'])->name('patch');
+        });
+
+		Route::group(array('prefix' => 'room-types', 'as' => 'room_type.'), function () {
+            Route::get('/', [BERoomTypeController::class, 'index'])->name('index');
+            Route::get('/{Id}', [BERoomTypeController::class, 'show'])->name('show');
+            Route::patch('/{Id}', [BERoomTypeController::class, 'update'])->name('patch');
+        });
+
+        Route::group(array('prefix' => 'users', 'as' => 'room_type.'), function () {
+            Route::get('/', [BEUserController::class, 'index'])->name('index');
+            Route::get('/{Id}', [BEUserController::class, 'show'])->name('show');
+            Route::patch('/{Id}', [BEUserController::class, 'update'])->name('patch');
+        });
+
+
     });
 
     Route::group(['prefix' => '/auth'], function () {

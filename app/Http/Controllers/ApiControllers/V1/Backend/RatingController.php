@@ -24,6 +24,11 @@ class RatingController extends BaseController
 
     public function index(Request $request)
     {
+        $request['loadRelation'] = [
+            "roomTypePacket.packet:id,name_packet",
+            "roomTypePacket.roomType:id,name",
+            "customer:id,email"
+        ];
         $lists = $this->ratingServices->index($request);
 		if ($lists instanceof \Illuminate\Pagination\LengthAwarePaginator){
             return (new RatingListResource($lists))->additional([

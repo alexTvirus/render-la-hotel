@@ -32,7 +32,7 @@ class RatingRoomListResource extends ApiResource
             ]);
         });
         $avg = $this->resource->avg('rate');
-        $lists['avg'] = number_format((float) $avg, 2, '.', '');
+        $lists['avg'] = number_format((float) $avg, 1, '.', '');
 		$lists['room_type_packet_id'] = $roomTypePacketId;
 
         return $lists->toArray();

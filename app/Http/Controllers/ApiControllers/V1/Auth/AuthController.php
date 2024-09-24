@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use App\Mails\VerifyMail;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends BaseController
 {
@@ -94,6 +95,7 @@ class AuthController extends BaseController
     public function changePassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
+			'old_password' => 'required|string|min:6|current_password:api',
             'password' => 'required|string|confirmed|min:6',
         ]);
 
@@ -102,6 +104,7 @@ class AuthController extends BaseController
         }
 
         $user = auth()->user();
+		
         if ($this->userServices->save(['id' => $user->id, 'password' => bcrypt($request->password)]))
             return $this->respondWithToken(auth()->refresh());
         return $this->responseErrorJson('fail', Response::HTTP_UNPROCESSABLE_ENTITY, "'Đổi mật khẩu thất bại'");

@@ -21,11 +21,14 @@ class UserController extends BaseController
         $this->userServices = $userServices;
         parent::__construct();
     }
-	
+
 	public function index(Request $request)
     {
+        $request['loadRelation'] = [
+            "bookings",
+        ];
         $lists = $this->userServices->index($request);
-		
+
 		if ($lists instanceof \Illuminate\Pagination\LengthAwarePaginator){
             return (new UserListResource($lists))->additional([
             'totalPage' => $lists->total(),
@@ -36,7 +39,7 @@ class UserController extends BaseController
 
         }
         return (new UserListResource($lists));
-	
+
     }
 
     public function update(Request $request,$id)
@@ -50,7 +53,7 @@ class UserController extends BaseController
         if ($validator->fails()) {
             return $this->responseErrorJson("fail", Response::HTTP_CONFLICT, $validator->errors()->first());
         }
-		
+
         $info = $request->only([
             "email",
             "first_name",

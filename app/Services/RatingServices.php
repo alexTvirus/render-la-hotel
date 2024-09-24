@@ -25,6 +25,7 @@ class RatingServices extends BaseServices
         $query_array = $request->query();
         $rate = $query_array['rate'] ?? "";
         $roomTypeid = $query_array['room_type_id'] ?? "";
+        $relations = $request->get("loadRelation", []);
 
         $room_type_id = $request->get("room_type_id");
         $packet_id = $request->get("packet_id");
@@ -46,13 +47,22 @@ class RatingServices extends BaseServices
             }]);
         }
 
-        $this->timeCondition($request,$query,"ratings");
+        if (!empty($relations)) {
+            foreach ($relations as $key => $value) {
+                $query = $query->with($value);
+            }
+        }
+
+        $this->timeCondition($request, $query, "ratings");
+		
+		$query->orderBy('updated_at','desc');
+
+        $data = empty($limit) ? ($query->get()) : ($query->paginate($limit));
+        //$query->get();
+        //$this->model->where("dsd",12)->get();
 
 
-//        $query->get();
-//        $this->model->where("dsd",12)->get();
-
-        return empty($limit) ? ($query->get()) : ($query->paginate($limit));
+        return $data;
 
     }
 
