@@ -14,6 +14,7 @@ use App\Models\Traits\SearchableTraitExtend;
 class Packet extends BaseModel
 {
 
+	protected $hidden = ['pivot','laravel_through_key'];
     protected $table = "packets";
     protected $fillable = [
         'base_price',
@@ -48,6 +49,10 @@ class Packet extends BaseModel
 //    }
 
 
+
+	public function roomTypes(){
+        return $this->belongsToMany(RoomType::class,'room_type_packet','packet_id','room_type_id',);
+    }
 
     public function roomTypePackets()
     {

@@ -14,8 +14,11 @@ use App\Models\Traits\SearchableTraitExtend;
 class RoomType extends BaseModel
 {
 
+	protected $hidden = ['pivot','laravel_through_key'];
     protected $table = "room_types";
     protected $fillable =[
+        'name',
+        'description',
         'base_price',
         'max_occupancy',
         'room_size',

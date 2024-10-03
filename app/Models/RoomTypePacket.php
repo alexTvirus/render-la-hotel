@@ -13,7 +13,7 @@ use App\Models\Traits\SearchableTraitExtend;
 
 class RoomTypePacket extends BaseModel
 {
-
+	protected $hidden = ['pivot','laravel_through_key'];
     protected $table = "room_type_packet";
     protected $fillable =[
         'room_type_id',
@@ -23,6 +23,7 @@ class RoomTypePacket extends BaseModel
         'end_at',
         'number_guest',
         'number_room',
+        'isTour',
 
 
         'created_by',

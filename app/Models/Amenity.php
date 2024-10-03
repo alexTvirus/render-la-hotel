@@ -19,6 +19,7 @@ class Amenity extends BaseModel
         'price',
         'name',
         'description',
+        'image',
 
         'created_by',
         'updated_by',

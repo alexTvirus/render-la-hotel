@@ -5,6 +5,7 @@ namespace App\Services;
 
 
 use App\Models\RoomType as RoomTypeModel;
+use App\Models\RoomTypeImage;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use stdClass;
@@ -42,6 +43,7 @@ class RoomTypeServices extends BaseServices
         $query = $this->model;
 
 
+
         // filter theo tour
 
 
@@ -49,38 +51,46 @@ class RoomTypeServices extends BaseServices
 
         //filter theo gói packet
         $tour = $query_array['tour'] ?? "";
+		$all = $query_array['all'] ?? "";
         $packets = $query_array['packets'] ?? "{}";
         $ratings = $query_array['ratings'] ?? "{}";
+		$selectTour = $query_array['selectTour'] ?? "";
         $packets = json_decode($packets, TRUE);
         $ratings = json_decode($ratings, TRUE);
 
+		if(empty($all)){
+			$query = $query->whereHas("packets", function ($query) use ($packets, $ratings, $tour,$selectTour) {
+				$query = $query
+					->select("packets.id"
+					);
 
-        $query = $query->whereHas("packets", function ($query) use ($packets, $ratings, $tour) {
-            $query = $query
-                ->select("packets.id"
-                );
+					if (!empty($tour)) {
+						$start_date = Carbon::now()->format('Y-m-d');
+						$query = $query
+							->whereNotNull('room_type_packet.start_at')
+							->whereNotNull('room_type_packet.end_at')
+							->where('room_type_packet.isTour',1)
+							->whereRaw("room_type_packet.start_at >= STR_TO_DATE(?, '%Y-%m-%d')", $start_date);
+					}
+					else if(!empty($selectTour)){
+						$query = $query
+								->where('room_type_packet.isTour', 1);
+					}
+					else {
+						$query = $query
+                            ->where('room_type_packet.isTour',0);
+					}
 
-            if (!empty($tour)) {
-                $start_date = Carbon::now()->format('Y-m-d');
-                $query = $query
-                    ->whereNotNull('room_type_packet.start_at')
-                    ->whereNotNull('room_type_packet.end_at')
-                    ->whereRaw("room_type_packet.start_at >= STR_TO_DATE(?, '%Y-%m-%d')", $start_date);
-            } else {
-                $query = $query
-                    ->whereNull('room_type_packet.start_at')
-                    ->whereNull('room_type_packet.end_at');
-            }
+				if (!empty($packets)) {
+					$query = $query->whereIn('packets.id', $packets);
 
-            if (!empty($packets)) {
-                $query = $query->whereIn('packets.id', $packets);
+				}
+				if (!empty($ratings)) {
+					$query = $query->whereIn('room_type_packet.rate', $ratings);
+				}
 
-            }
-            if (!empty($ratings)) {
-                $query = $query->whereIn('room_type_packet.rate', $ratings);
-            }
-
-        });
+			});
+		}
 
         $price = $query_array['price'] ?? [];
         if (!empty($price)) {
@@ -90,13 +100,16 @@ class RoomTypeServices extends BaseServices
         }
 
 
-        $sortBy = $query_array['sortBy'] ?? 1;
+        $sortBy = $query_array['sortBy'] ?? '';
         if (!empty($sortBy)) {
             $sortBy == 1 ? $query->orderBy('base_price', 'asc') : $query->orderBy('base_price', 'desc');
-        }
+        }else{
+			$query = $query->orderBy('updated_at', 'desc');
+		}
 
         //lay tat ca room type
         $roomtypes = $query->get();
+		//$this->model->where("we",11)->get();
 
         // điều kiện này để cuối cùng, vì sau khi thực thi các đk trên tìm ra roomtype thì
         // sẽ lấy roomtype tìm đc thực thi tiếp
@@ -111,7 +124,7 @@ class RoomTypeServices extends BaseServices
                 $roomsAvailable = collect();
                 $packetIds = collect();
                 $rooms->each(function ($room) use ($item, &$packetIds, &$roomsAvailable) {
-                    if ($room->roomTypePacket->room_type_id == $item->id) {
+                    if ($room?->roomTypePacket?->room_type_id == $item->id) {
                         $packet_id = $room->roomTypePacket->packet_id;
                         $roomsAvailable->push(['packet_id' => $packet_id,
                             'room_id' => $room->id, 'room_number' => $room->room_number
@@ -134,19 +147,20 @@ class RoomTypeServices extends BaseServices
             $roomtypes->each(function ($item, $key) use ($roomtypes, $tour) {
                 // kiem tra xem co phong ung voi id do ko
                 // neu co thi moi hien thi
-                if (!$item->rooms->isEmpty()) {
+                //if (!$item->rooms->isEmpty()) {
                     $packetIds = $item->roomTypePackets->pluck("packet_id");
                     $this->prepareRoomType($item, $packetIds, $tour);
-                } else {
+                //} else {
                     // ko co phong thi ko hien thi
-                    $roomtypes->forget($key);
-                }
+                //    $roomtypes->forget($key);
+                //}
 
             });
 
             return $roomtypes->paginate($limit);
         }
     }
+
 
     public function prepareRoomType(&$item, $packetIds, $isTour = 0)
     {
@@ -179,7 +193,7 @@ class RoomTypeServices extends BaseServices
                 if ($roomPackets->contains(function ($roomPacket) use ($roomType, &$packet, $isTour) {
 
                     if ($isTour && $roomType->id == $roomPacket->room_type_id &&
-                        $roomPacket['start_at'] && $roomPacket['end_at']) {
+                        $roomPacket['start_at'] && $roomPacket['end_at'] && $roomPacket['isTour']) {
                         $packet['tour_start_at'] = $roomPacket['start_at'];
                         $packet['tour_end_at'] = $roomPacket['end_at'];
                         $packet['number_guest'] = $roomPacket['number_guest'];
@@ -188,7 +202,7 @@ class RoomTypeServices extends BaseServices
                     }
                     if (!$isTour && $roomType->id == $roomPacket->room_type_id
                         &&
-                        !$roomPacket['start_at'] && !$roomPacket['end_at']) {
+                        $roomPacket['isTour']==0) {
                         return true;
                     }
                     return false;
@@ -260,7 +274,7 @@ class RoomTypeServices extends BaseServices
         $packet_id = $query_array['packet_id'] ?? "";
         $data = $this->model->where('id', $id)->first();
         if ($data) {
-            if (!$data->rooms->isEmpty()) {
+            //if (!$data->rooms->isEmpty()) {
                 if (isset($request['checkin_at']) || isset($request['checkout_at'])) {
                     // get room voi dieu kien cua booking
                     $bookings = $this->bookingServices->getBookingByNotAvailble($request)->pluck("id");
@@ -272,7 +286,7 @@ class RoomTypeServices extends BaseServices
                     $packetIds = collect();
                     if (empty($packet_id)) {
                         $rooms->each(function ($room) use ($data, &$packetIds, &$roomsAvailable) {
-                            if ($room->roomTypePacket->room_type_id == $data->id) {
+                            if ($room?->roomTypePacket?->room_type_id == $data->id) {
                                 $packet_id = $room->roomTypePacket->packet_id;
                                 $roomsAvailable->push(['packet_id' => $packet_id,
                                     'room_id' => $room->id, 'room_number' => $room->room_number
@@ -284,8 +298,8 @@ class RoomTypeServices extends BaseServices
                     } else {
                         $packetIds->push($packet_id);
                         $rooms->each(function ($room) use ($data, &$roomsAvailable, $packet_id) {
-                            if ($room->roomTypePacket->room_type_id == $data->id
-                                && $room->roomTypePacket->packet_id == $packet_id) {
+                            if ($room?->roomTypePacket?->room_type_id == $data?->id
+                                && $room?->roomTypePacket?->packet_id == $packet_id) {
                                 $roomsAvailable->push(['packet_id' => $room->roomTypePacket->packet_id,
                                     'room_id' => $room->id, 'room_number' => $room->room_number
                                 ]);
@@ -296,30 +310,57 @@ class RoomTypeServices extends BaseServices
                     $data['rooms_available'] = $roomsAvailable;
                     $this->prepareRoomType($data, $packetIds, $tour);
                 } else {
-                    $packetIds = $data->roomTypePackets->pluck("packet_id");
+                    $packetIds = $data?->roomTypePackets?->pluck("packet_id");
                     $this->prepareRoomType($data, $packetIds, $tour);
                 }
-            } else {
-                $data = collect();
-            }
+            //} else {
+            //    $data = collect();
+            //}
         }
         return $data;
     }
 
-    public function save(array $attributes)
+    public function uploadImages($request,$entity){
+
+    }
+
+    public function save($request,array $attributes)
     {
+        $entity = null;
         if (!empty($attributes['id'])) {
             $entity = $this->model->where('id', $attributes['id'])->first();
-            if ($entity) {
+            if (!empty($entity)) {
+
+                // xoa anh
+                $roomTypeImageServices = app()->make(RoomTypeImage::class);
+
+                $oldImages = $entity->roomTypeImages->pluck('id')->all();
+
+                $listtemp = [];
+                if (isset($attributes['images'])) {
+                    foreach ($attributes['images'] as $index => $image) {
+                        if (in_array($image, $oldImages)) {
+                            $listtemp[] = $image;
+                        }
+                    }
+                }
+
+                // lọc các id cần xóa
+                $listdelete = array_diff($oldImages, $listtemp);
+
+                foreach ($listdelete as $id) {
+                    $roomTypeImageServices->delete($id);
+                }
+
                 $entity->fill($attributes)->save();
-                return $entity;
-            } else {
-                return null;
             }
         } else {
             $entity = $this->model->create($attributes);
-            return $entity;
         }
+        if (!empty($entity)) {
+            $this->uploadImages($request,$entity);
+        }
+        return $entity;
     }
 
     public function delete($id)

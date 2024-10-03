@@ -19,6 +19,7 @@ class AmenityServices extends BaseServices
     {
 		$limit = $request->get("limit", "");
         $query = $this->model;
+		$query =$query->orderBy('updated_at', 'desc');
          $data = empty($limit) ? ($query->get()) : ($query->paginate($limit));
 		return $data;
     }

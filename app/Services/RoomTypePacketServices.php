@@ -66,6 +66,9 @@ class RoomTypePacketServices extends BaseServices
 
     public function save(array $attributes)
     {
+
+
+
         if (!empty($attributes['id'])) {
             $entity = $this->model->where('id', $attributes['id'])->first();
             if ($entity) {

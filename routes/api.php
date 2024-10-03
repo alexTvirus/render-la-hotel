@@ -11,7 +11,7 @@ use App\Http\Controllers\ApiControllers\V1\Frontend\UserController;
 use App\Http\Controllers\ApiControllers\V1\Frontend\RatingController;
 use App\Http\Controllers\ApiControllers\V1\Auth\AuthController;
 use App\Http\Controllers\ApiControllers\V1\Auth\VerificationController;
-use App\Http\Controllers\ApiControllers\V1\Backend\DashBoardController ;
+use App\Http\Controllers\ApiControllers\V1\Backend\DashBoardController;
 use App\Http\Controllers\ApiControllers\V1\Backend\BookingController as BEBookingController;
 use App\Http\Controllers\ApiControllers\V1\Backend\RoomController as BERoomController;
 use App\Http\Controllers\ApiControllers\V1\Backend\RatingController as BERatingController;
@@ -120,35 +120,44 @@ Route::group(array('prefix' => '/v1'), function () {
             Route::get('/', [BEBookingController::class, 'index'])->name('index');
             Route::get('/{bookingId}', [BEBookingController::class, 'show'])->name('show');
             Route::patch('/{bookingId}', [BEBookingController::class, 'update'])->name('patch');
+			Route::delete('/{Id}', [BEBookingController::class, 'delete'])->name('delete');
         });
-		 Route::group(array('prefix' => 'rooms', 'as' => 'rooms.'), function () {
+        Route::group(array('prefix' => 'rooms', 'as' => 'rooms.'), function () {
             Route::get('/', [BERoomController::class, 'index'])->name('index');
             Route::get('/{Id}', [BERoomController::class, 'show'])->name('show');
+            Route::post('/', [BERoomController::class, 'store'])->name('store');
             Route::patch('/{Id}', [BERoomController::class, 'update'])->name('patch');
+			Route::delete('/{Id}', [BERoomController::class, 'delete'])->name('delete');
         });
 
-		Route::group(array('prefix' => 'ratings', 'as' => 'ratings.'), function () {
+        Route::group(array('prefix' => 'ratings', 'as' => 'ratings.'), function () {
             Route::get('/', [BERatingController::class, 'index'])->name('index');
             Route::get('/{Id}', [BERatingController::class, 'show'])->name('show');
             Route::patch('/{Id}', [BERatingController::class, 'update'])->name('patch');
         });
 
-		Route::group(array('prefix' => 'packets', 'as' => 'packets.'), function () {
+        Route::group(array('prefix' => 'packets', 'as' => 'packets.'), function () {
             Route::get('/', [BEPacketController::class, 'index'])->name('index');
-            Route::get('/{Id}', [BERatingController::class, 'show'])->name('show');
-            Route::patch('/{Id}', [BERatingController::class, 'update'])->name('patch');
+            Route::get('/{Id}', [BEPacketController::class, 'show'])->name('show');
+            Route::post('/', [BEPacketController::class, 'store'])->name('store');
+            Route::patch('/{Id}', [BEPacketController::class, 'update'])->name('patch');
+			Route::delete('/{Id}', [BEPacketController::class, 'delete'])->name('delete');
         });
 
-		Route::group(array('prefix' => 'amenities', 'as' => 'amenities.'), function () {
+        Route::group(array('prefix' => 'amenities', 'as' => 'amenities.'), function () {
             Route::get('/', [BEAmenityController::class, 'index'])->name('index');
             Route::get('/{Id}', [BEAmenityController::class, 'show'])->name('show');
+            Route::post('/', [BEAmenityController::class, 'store'])->name('store');
             Route::patch('/{Id}', [BEAmenityController::class, 'update'])->name('patch');
+			Route::delete('/{Id}', [BEAmenityController::class, 'delete'])->name('delete');
         });
 
-		Route::group(array('prefix' => 'room-types', 'as' => 'room_type.'), function () {
+        Route::group(array('prefix' => 'room-types', 'as' => 'room_type.'), function () {
             Route::get('/', [BERoomTypeController::class, 'index'])->name('index');
             Route::get('/{Id}', [BERoomTypeController::class, 'show'])->name('show');
+            Route::post('/', [BERoomTypeController::class, 'store'])->name('store');
             Route::patch('/{Id}', [BERoomTypeController::class, 'update'])->name('patch');
+			Route::delete('/{Id}', [BERoomTypeController::class, 'delete'])->name('delete');
         });
 
         Route::group(array('prefix' => 'users', 'as' => 'room_type.'), function () {

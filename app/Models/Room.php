@@ -13,7 +13,7 @@ use App\Models\Traits\SearchableTraitExtend;
 
 class Room extends BaseModel
 {
-    protected $hidden = ['pivot'];
+    protected $hidden = ['pivot','laravel_through_key'];
     protected $table = "rooms";
     protected $fillable =[
         'room_view',
