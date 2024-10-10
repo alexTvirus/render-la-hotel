@@ -16,8 +16,11 @@ class BenefitServices extends BaseServices
 
     public function index($request)
     {
+      $limit = $request->get("limit", "");
         $query = $this->model;
-        return $query->get();
+		$query =$query->orderBy('updated_at', 'desc');
+         $data = empty($limit) ? ($query->get()) : ($query->paginate($limit));
+		return $data;
     }
 
 

@@ -40,6 +40,14 @@ class Benefit extends BaseModel
     public static function boot()
     {
         parent::boot();
+		static::deleting(function ($model) {
+            $packetBenefits = $model->packetBenefits;
+            if($packetBenefits->isEmpty()){
+                $model->packetBenefits()->delete();
+            }else{
+                return false;
+            }
+        });
 
     }
 
@@ -58,4 +66,14 @@ class Benefit extends BaseModel
         return $query->select( array_diff( $this->columns(), $value) );
     }
 
+
+	public function packets()
+    {
+        return $this->belongsToMany(Packet::class, 'packet_benefit', 'benefit_id','packet_id');
+    }
+	
+	 public function packetBenefits()
+    {
+        return $this->hasMany(PacketBenefit::class, 'benefit_id');
+    }
 }

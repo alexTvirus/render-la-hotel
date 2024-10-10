@@ -38,7 +38,16 @@ class Room extends BaseModel
     public static function boot()
     {
         parent::boot();
+        static::deleting(function ($model) {
+            $roomBookings = $model->roomBookings;
+            $roomTypePacket= $model->roomTypePacket;
 
+            if(!$roomBookings->isEmpty() ||
+                !empty($roomTypePacket->start_at) ||
+                !empty($roomTypePacket->end_at)){
+                return false;
+            }
+        });
     }
 
 //    public function getSlugOptions() :  SlugOptions

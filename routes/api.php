@@ -20,6 +20,9 @@ use App\Http\Controllers\ApiControllers\V1\Backend\PacketController as BEPacketC
 use App\Http\Controllers\ApiControllers\V1\Backend\UserController as BEUserController;
 use App\Http\Controllers\ApiControllers\V1\Backend\AmenityController as BEAmenityController;
 use App\Http\Controllers\ApiControllers\V1\Backend\RoomTypeController as BERoomTypeController;
+use App\Http\Controllers\ApiControllers\V1\Backend\ImageController as BEImageController;
+use App\Http\Controllers\ApiControllers\V1\Backend\BenefitController as BEBenefitController;
+
 
 
 /*
@@ -81,10 +84,12 @@ Route::group(array('prefix' => '/v1'), function () {
     });
 
     Route::group(array('prefix' => 'rating', 'as' => 'rating.'), function () {
-        Route::get('/room/{roomTypeId}/packet/{packetId}', [RatingController::class, 'ratingRoom'])->name('ratingRoom');
+        Route::get('/room/{roomTypeId}/packet/{packetId}', [RatingController::class, 'ratingRoom'])
+		->middleware('auth:api')
+		->name('ratingRoom');
         Route::get('/', [RatingController::class, 'index'])->name('list');
         Route::post('/', [RatingController::class, 'store'])
-//            ->middleware('auth:api')
+            ->middleware('auth:api')
             ->name('store');
     });
 
@@ -94,6 +99,11 @@ Route::group(array('prefix' => '/v1'), function () {
             Route::get('/{bookingId}', [BookingController::class, 'show'])->name('show');
             Route::patch('/{bookingId}', [BookingController::class, 'update'])->name('patch');
         });
+		Route::group(array('prefix' => '{customerId}/wishlists', 'as' => 'wishlists.'), function () {
+            Route::get('/', [UserController::class, 'indexWishlist'])->name('index');
+            Route::patch('/', [UserController::class, 'updateWishlist'])->name('patch');
+        });
+
         Route::patch('/{id}', [UserController::class, 'update'])->name('patch');
 
     });
@@ -151,6 +161,16 @@ Route::group(array('prefix' => '/v1'), function () {
             Route::patch('/{Id}', [BEAmenityController::class, 'update'])->name('patch');
 			Route::delete('/{Id}', [BEAmenityController::class, 'delete'])->name('delete');
         });
+		
+		Route::group(array('prefix' => 'benefits', 'as' => 'amenities.'), function () {
+            Route::get('/', [BEBenefitController::class, 'index'])->name('index');
+            Route::get('/{Id}', [BEBenefitController::class, 'show'])->name('show');
+            Route::post('/', [BEBenefitController::class, 'store'])->name('store');
+            Route::patch('/{Id}', [BEBenefitController::class, 'update'])->name('patch');
+			Route::delete('/{Id}', [BEBenefitController::class, 'delete'])->name('delete');
+        });
+		
+		
 
         Route::group(array('prefix' => 'room-types', 'as' => 'room_type.'), function () {
             Route::get('/', [BERoomTypeController::class, 'index'])->name('index');
@@ -166,6 +186,11 @@ Route::group(array('prefix' => '/v1'), function () {
             Route::patch('/{Id}', [BEUserController::class, 'update'])->name('patch');
         });
 
+        Route::group(array('prefix' => 'images', 'as' => 'images.'), function () {
+            Route::get('/{Id}', [BEImageController::class, 'show'])->name('show');
+            Route::post('/', [BEImageController::class, 'store'])->name('store');
+            Route::delete('/{Id}', [BEImageController::class, 'delete'])->name('delete');
+        });
 
     });
 

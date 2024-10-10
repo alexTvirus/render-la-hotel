@@ -42,7 +42,18 @@ class RoomType extends BaseModel
     public static function boot()
     {
         parent::boot();
+        static::deleting(function ($model) {
+            $roomTypePackets = $model->roomTypePackets;
+            $rooms= $model->rooms;
+            $ratings= $model->ratings;
 
+            if(!$roomTypePackets->isEmpty() ||
+                !$rooms->isEmpty() ||
+                !$ratings->isEmpty() ){
+                return false;
+            }
+            $model->roomTypeImages()->delete();
+        });
     }
 
 //    public function getSlugOptions() :  SlugOptions
@@ -63,6 +74,10 @@ class RoomType extends BaseModel
     public function ratings(){
         return $this->hasManyThrough(Rating::class,RoomTypePacket::class);
     }
+	
+	public function amenityRoomTypes(){
+        return $this->hasMany(AmenityRoomType::class,'room_type_id');
+    }
 
     public function amenities(){
         return $this->belongsToMany(Amenity::class,'amenity_room_type','room_type_id','amenity_id');
@@ -79,6 +94,16 @@ class RoomType extends BaseModel
     public function roomTypeImages(){
         return $this->hasMany(RoomTypeImage::class,'room_type_id');
     }
+
+    function wishlists(){
+        return $this->hasMany(WishList::class,'room_type_id')->withTimestamps();
+    }
+	
+	 public function users()
+    {
+        return $this->belongsToMany(User::class, 'wishlists','room_type_id', 'customer_id' )->withTimestamps();
+    }
+
 
     public function scopeHiddenProperty(){
         $this->makeHidden(['created_by', 'updated_by', 'created_at', 'updated_at']);

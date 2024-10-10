@@ -13,6 +13,7 @@ use App\Models\Traits\SearchableTraitExtend;
 class Booking extends BaseModel
 {
 
+	protected $hidden = ['pivot','laravel_through_key'];
     protected $table = "bookings";
     protected $fillable =[
         'checkin_at',

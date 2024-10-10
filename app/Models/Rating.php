@@ -42,7 +42,7 @@ class Rating extends BaseModel
     public static function boot()
     {
         parent::boot();
-        //todo: nếu có lệnh create >> cập nhật rate của bảng room type packet
+        //nếu có lệnh create >> cập nhật rate của bảng room type packet
         static::created(function ($model) {
             $roomTypePacketServices = app()->make(RoomTypePacketServices::class);
             $room_type_packet = $roomTypePacketServices->show($model->room_type_packet_id);

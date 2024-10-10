@@ -55,11 +55,14 @@ class RoomTypeServices extends BaseServices
         $packets = $query_array['packets'] ?? "{}";
         $ratings = $query_array['ratings'] ?? "{}";
 		$selectTour = $query_array['selectTour'] ?? "";
+		
+		$selectNomal = $query_array['selectNomal'] ?? "";
         $packets = json_decode($packets, TRUE);
         $ratings = json_decode($ratings, TRUE);
+		
 
 		if(empty($all)){
-			$query = $query->whereHas("packets", function ($query) use ($packets, $ratings, $tour,$selectTour) {
+			$query = $query->whereHas("packets", function ($query) use ($packets, $ratings, $tour,$selectTour,$selectNomal) {
 				$query = $query
 					->select("packets.id"
 					);
@@ -78,8 +81,9 @@ class RoomTypeServices extends BaseServices
 					}
 					else {
 						$query = $query
-                            ->where('room_type_packet.isTour',0);
+								->where('room_type_packet.isTour', 0);
 					}
+					
 
 				if (!empty($packets)) {
 					$query = $query->whereIn('packets.id', $packets);
@@ -91,6 +95,18 @@ class RoomTypeServices extends BaseServices
 
 			});
 		}
+		
+		if(isset($query_array['roomTypes'])){
+			$roomTypes = $query_array['roomTypes'] ?? "";
+			$roomTypes = json_decode($roomTypes, TRUE);
+			if(!empty($roomTypes)){
+			 $query = $query->whereIn('id', $roomTypes);
+			}else{
+				return collect();
+			}
+		}
+		
+		
 
         $price = $query_array['price'] ?? [];
         if (!empty($price)) {
@@ -102,9 +118,9 @@ class RoomTypeServices extends BaseServices
 
         $sortBy = $query_array['sortBy'] ?? '';
         if (!empty($sortBy)) {
-            $sortBy == 1 ? $query->orderBy('base_price', 'asc') : $query->orderBy('base_price', 'desc');
+            $sortBy == 1 ? $query->orderBy('room_types.base_price', 'asc') : $query->orderBy('room_types.base_price', 'desc');
         }else{
-			$query = $query->orderBy('updated_at', 'desc');
+			$query = $query->orderBy('room_types.updated_at', 'desc');
 		}
 
         //lay tat ca room type
@@ -324,42 +340,86 @@ class RoomTypeServices extends BaseServices
 
     }
 
+    public function checkOldImage($entity,$attributes){
+        $roomTypeImageServices = app()->make(RoomTypeImageServices::class);
+        // ktr xoa img cu
+        $imageList = $attributes['imageIds'];
+
+        $oldImages = $entity->roomTypeImages->pluck('id')->all();
+
+        $listtemp = [];
+        if (!empty($imageList)) {
+            foreach ($imageList as $index => $img) {
+                if (in_array($img, $oldImages)) {
+                    $listtemp[] = $img;
+                }
+            }
+        }
+
+        // lọc các id cần xóa
+        $listdelete = array_diff($oldImages, $listtemp);
+
+        foreach ($listdelete as $id) {
+            $roomTypeImageServices->delete($id);
+        }
+    }
+
     public function save($request,array $attributes)
     {
+        $roomTypeImageServices = app()->make(RoomTypeImageServices::class);
         $entity = null;
         if (!empty($attributes['id'])) {
             $entity = $this->model->where('id', $attributes['id'])->first();
             if (!empty($entity)) {
 
-                // xoa anh
-                $roomTypeImageServices = app()->make(RoomTypeImage::class);
-
-                $oldImages = $entity->roomTypeImages->pluck('id')->all();
-
-                $listtemp = [];
-                if (isset($attributes['images'])) {
-                    foreach ($attributes['images'] as $index => $image) {
-                        if (in_array($image, $oldImages)) {
-                            $listtemp[] = $image;
-                        }
-                    }
-                }
-
-                // lọc các id cần xóa
-                $listdelete = array_diff($oldImages, $listtemp);
-
-                foreach ($listdelete as $id) {
-                    $roomTypeImageServices->delete($id);
-                }
-
                 $entity->fill($attributes)->save();
+
+                $attributes['room_type_id'] = $entity->id;
+                if (!empty($attributes['link_img'])) {
+                    $this->checkOldImage($entity,$attributes);
+                    $fileList = $attributes['link_img']['fileList'];
+
+                    if (!empty($fileList) && count($fileList) > 0) {
+                        foreach ($fileList as $item) {
+                            $attributes['url'] = $item['response']['data'] ?? "";
+                            if (!empty($attributes['url'])) {
+                                $info['id'] = $item['id'] ?? "";
+                                $info['image_type_id'] = "1";
+                                $info['url']=$attributes['url'];
+								$info['room_type_id']=$attributes['room_type_id'];
+                                $roomTypeImageServices->save($info);
+                            }
+                        };
+                    }
+
+
+                }
+
             }
         } else {
             $entity = $this->model->create($attributes);
+            $attributes['room_type_id'] = $entity->id;
+            if (!empty($attributes['link_img'])) {
+                $fileList = $attributes['link_img']['fileList'];
+                if (!empty($fileList) && count($fileList) > 0) {
+                    foreach ($fileList as $item) {
+                        $attributes['url'] = $item['response']['data'] ?? "";
+                        if (!empty($attributes['url'])) {
+                            $info['image_type_id'] = "1";
+                            $info['url']=$attributes['url'];
+							$info['room_type_id']=$attributes['room_type_id'];
+                            $roomTypeImageServices->save($info);
+                        }
+                    };
+                }
+            }
         }
-        if (!empty($entity)) {
-            $this->uploadImages($request,$entity);
+		
+		if(!empty($entity)){
+            $amenities = $attributes['amenities']??[];
+            $entity->amenities()->sync($amenities);
         }
+
         return $entity;
     }
 

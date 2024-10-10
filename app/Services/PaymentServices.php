@@ -18,6 +18,7 @@ class PaymentServices extends BaseServices
     public function index($request)
     {
         $query = $this->model;
+		$query =$query->orderBy('updated_at', 'desc');
         return $query->get();
     }
 

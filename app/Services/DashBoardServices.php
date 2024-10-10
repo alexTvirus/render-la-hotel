@@ -30,7 +30,8 @@ class DashBoardServices extends BaseServices
         // todo: tong so phong
         // tong so tour
         $packetServices = app()->make(PacketServices::class);
-        $request['tour']=1;
+        $request['manageTour']=1;
+		$request['tour']=1;
         $tours = $packetServices->index($request);
         $numberOfTour = $tours;
         $result->put("number_of_tour" , $numberOfTour->count());

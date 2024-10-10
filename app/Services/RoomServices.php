@@ -26,13 +26,14 @@ class RoomServices extends BaseServices
         $checkin = $query_array['checkin_at'] ?? "";
         $checkout = $query_array['checkout_at'] ?? "";
         $room_type_id = $query_array['room_type_id'] ?? "";
+		$selectTour = $query_array['selectTour'] ?? "";
         $packet_id = $query_array['packet_id'] ?? "";
 		$relations = $request->get("loadRelation", []);
 
 
         $query = $this->model;
 
-        if (!empty($checkin) && !empty($checkout) && !empty($room_type_id) && !empty($packet_id)) {
+        if (!empty($checkin) && !empty($checkout) && !empty($room_type_id) && !empty($packet_id) && !empty($selectTour)) {
 			// room de set cho tour :
 			// 1. tat ca booking cua room do phai nho hon ngay bat dau tour (vd: booking 1/2 - 3/2 , 1/3- 4/3 , thi tour phai start 5/3 moi dc lay phong nay)
             // ko lay room da dc dat trong ngay in-out
@@ -89,7 +90,7 @@ class RoomServices extends BaseServices
             }
         }
 
-		$query = $query->orderBy('updated_at', 'desc');
+		$query = $query->orderBy('rooms.updated_at', 'desc');
         $rs = empty($limit) ? ($query->get()) : ($query->paginate($limit));
 //        $this->model->where("ewf", 12)->get();
         return $rs;

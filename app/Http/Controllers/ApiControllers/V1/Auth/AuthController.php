@@ -168,6 +168,7 @@ class AuthController extends BaseController
     private function userProfile()
     {
         $user = auth()->user();
+        $user->wishlists;
         return $user;
     }
 }

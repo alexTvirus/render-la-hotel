@@ -11,15 +11,14 @@ use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 use App\Models\Traits\SearchableTraitExtend;
 
-class Amenity extends BaseModel
+class WishList extends BaseModel
 {
-    protected $hidden = ['pivot'];
-    protected $table = "amenities";
+
+    protected $table = "wishlists";
     protected $fillable =[
-        'price',
-        'name',
-        'description',
-        'image',
+        'customer_id',
+        'room_type_id',
+
 
         'created_by',
         'updated_by',
@@ -38,13 +37,7 @@ class Amenity extends BaseModel
     public static function boot()
     {
         parent::boot();
-        static::deleting(function ($model) {
-            $roomTypes = $model->roomTypes;
-            if(!$roomTypes->isEmpty() ){
-                return false;
-            }
-            $model->amenityRoomTypes()->delete();
-        });
+
     }
 
 //    public function getSlugOptions() :  SlugOptions
@@ -53,13 +46,11 @@ class Amenity extends BaseModel
 //            ->generateSlugsFrom('comic_name')
 //            ->saveSlugsTo('slug');
 //    }
-
-    public function roomTypes(){
-        return $this->belongsToMany(RoomType::class,'amenity_room_type','amenity_id','room_type_id');
+    public function user(){
+        return $this->belongsTo(User::class,'customer_id');
     }
 
-    public function amenityRoomTypes(){
-        return $this->hasMany(AmenityRoomType::class,'amenity_id');
+    public function roomType(){
+        return $this->belongsTo(RoomType::class,'room_type_id');
     }
-
 }

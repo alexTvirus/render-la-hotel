@@ -5,8 +5,10 @@ namespace App\Services;
 
 
 use App\Models\Rating as RatingModel;
+use App\Models\RoomBooking;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class RatingServices extends BaseServices
 {
@@ -15,6 +17,7 @@ class RatingServices extends BaseServices
     public function __construct(RatingModel $model, RoomTypePacketServices $roomTypePacketServices)
     {
         parent::__construct($model);
+
         $this->roomTypePacketServices = $roomTypePacketServices;
     }
 
@@ -24,6 +27,7 @@ class RatingServices extends BaseServices
         $query = $this->model;
         $query_array = $request->query();
         $rate = $query_array['rate'] ?? "";
+        $checkCanReview = $query_array['checkCanReview'] ?? "";
         $roomTypeid = $query_array['room_type_id'] ?? "";
         $relations = $request->get("loadRelation", []);
 
@@ -54,16 +58,32 @@ class RatingServices extends BaseServices
         }
 
         $this->timeCondition($request, $query, "ratings");
-		
-		$query->orderBy('updated_at','desc');
+
+        $query->orderBy('updated_at', 'desc');
 
         $data = empty($limit) ? ($query->get()) : ($query->paginate($limit));
         //$query->get();
         //$this->model->where("dsd",12)->get();
 
-
         return $data;
 
+    }
+
+    public function canReview($data)
+    {
+        if (!$data->isEmpty()) {
+            $roomTypePacketId = $data->first()->room_type_packet_id;
+            $user = $this->getCurrentUser();
+            $bookings = $user->bookings->pluck('id')->all();
+            $roomBookingQuery = RoomBooking::query();
+            $roomBooking = $roomBookingQuery->
+            whereIn('room_booking.booking_id', $bookings)
+                ->where('room_booking.room_type_packet_id', $roomTypePacketId)
+            ->first();
+
+            return empty($roomBooking) ? false : true;
+        }
+        return false;
     }
 
 

@@ -26,7 +26,11 @@ class RoomController extends BaseController
     public function index(Request $request)
     {
 		$request['loadRelation'] = [
-            "roomTypePacket:id,packet_id,room_type_id,isTour"
+            "roomTypePacket:id,isTour",
+			"roomTypePacket.roomType:id,name",
+			"roomTypePacket.packet:id,name_packet",
+			"bookings:id,checkin_at,checkout_at,total_price,status,number_guests",
+			"bookings.customer:id,email,phone,first_name,last_name",
         ];
         $lists = $this->roomServices->index($request);
         if ($lists instanceof \Illuminate\Pagination\LengthAwarePaginator) {

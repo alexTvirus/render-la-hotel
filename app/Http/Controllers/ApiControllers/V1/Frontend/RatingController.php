@@ -11,6 +11,7 @@ use App\Tranformers\RatingResource\RatingRoomListResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class RatingController extends BaseController
 {
@@ -41,6 +42,7 @@ class RatingController extends BaseController
 
     public function ratingRoom(Request $request,$roomTypeId,$packetId)
     {
+		$request['checkCanReview']=1;
         $request['room_type_id'] =$roomTypeId;
         $request['packet_id'] =$packetId;
         $lists = $this->ratingServices->index($request);

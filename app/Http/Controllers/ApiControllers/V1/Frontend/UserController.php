@@ -22,6 +22,45 @@ class UserController extends BaseController
         parent::__construct();
     }
 
+	public function indexWishlist(Request $request)
+    {
+        $request['loadRelation'] = [
+            "wishlists",
+        ];
+        $lists = $this->userServices->getAllWishlists($request);
+
+		if ($lists instanceof \Illuminate\Pagination\LengthAwarePaginator){
+            return (new UserListResource($lists))->additional([
+            'totalPage' => $lists->total(),
+            'lastPage' => $lists->lastPage(),
+            'currentPage' => $lists->currentPage(),
+            'perPage' => (int)$lists->perPage(),
+			]);
+
+        }
+        return (new UserListResource($lists));
+
+    }
+
+	public function updateWishlist(Request $request,$customerId)
+    {
+		$info = $request->only([
+            "room_types",
+            "id",
+        ]);
+
+		DB::beginTransaction();
+        try {
+             $entity = $this->userServices->saveWishlists($request,$info);
+            DB::commit();
+            return $this->responseJson('success', Response::HTTP_OK, new UserDetailResource($entity));
+        } catch (\Exception $e) {
+            DB::rollback();
+            return $this->responseJson('fail', Response::HTTP_INTERNAL_SERVER_ERROR, []);
+        }
+
+    }
+
 	public function index(Request $request)
     {
         $request['loadRelation'] = [

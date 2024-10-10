@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\ChapterServices;
 use App\Services\HashtagServices;
+use App\Services\PacketImageServices;
 use App\Services\TaggedServices;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -38,6 +39,14 @@ class Packet extends BaseModel
     public static function boot()
     {
         parent::boot();
+        static::deleting(function ($model) {
+            $roomTypePackets = $model->roomTypePackets;
+            if($roomTypePackets->isEmpty()){
+                $model->packetImages()->delete();
+            }else{
+                return false;
+            }
+        });
 
     }
 

@@ -14,8 +14,7 @@
         "laravelcollective/html": "^6.4",
         "masbug/flysystem-google-drive-ext": "^2.0",
         "nicolaslopezj/searchable": "^1.13",
-        "spatie/laravel-sitemap": "^7.0",
-        "spatie/laravel-sluggable": "^3.6",
+        "spatie/laravel-permission": "6.0.0",
         "tymon/jwt-auth": "^2.1"
     },
     "require-dev": {

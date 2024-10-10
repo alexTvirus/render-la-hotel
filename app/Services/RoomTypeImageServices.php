@@ -5,12 +5,14 @@ namespace App\Services;
 
 
 use App\Models\Amenity;
+use App\Models\PacketImage;
 use App\Models\Rating;
+use App\Models\RoomTypeImage;
 use Illuminate\Support\Facades\Storage;
 
-class AmenityServices extends BaseServices
+class RoomTypeImageServices extends BaseServices
 {
-    public function __construct(Amenity $model)
+    public function __construct(RoomTypeImage $model)
     {
         parent::__construct($model);
     }
@@ -34,33 +36,18 @@ class AmenityServices extends BaseServices
 
     public function save(array $attributes)
     {
-        $entity = null;
         if (!empty($attributes['id'])) {
             $entity = $this->model->where('id', $attributes['id'])->first();
             if ($entity) {
-                if (!empty($attributes['image'])) {
-                    $fileList = $attributes['image']['fileList'];
-                    if (!empty($fileList) && count($fileList) > 0) {
-                        $attributes['image'] = $fileList[0]['response']['data'] ?? "";
-                    }
-                }else{
-                    $attributes['image'] = "";
-                }
-
                 $entity->fill($attributes)->save();
+                return $entity;
+            } else {
+                return null;
             }
         } else {
-            if (!empty($attributes['image'])) {
-                $fileList = $attributes['image']['fileList'];
-                if (!empty($fileList) && count($fileList) > 0) {
-                    $attributes['image'] = $fileList[0]['response']['data'] ?? "";
-                }
-            }
-
             $entity = $this->model->create($attributes);
-
+            return $entity;
         }
-        return $entity;
     }
 
     public function delete($id)

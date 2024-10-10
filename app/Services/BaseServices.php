@@ -70,4 +70,51 @@ class BaseServices
         return $randomString;
     }
 
+    public function getGGId($url){
+        $pattern = "/https:\/\/lh3.googleusercontent.com\/d\/(.*?)=w1000/i";
+        preg_match($pattern, $url,$matches);
+        return $matches[1]??"";
+    }
+
+    public function deteleGGDrive($urls){
+        try {
+            $driveService = Storage::disk('google');
+            $pattern = "/https:\/\/lh3.googleusercontent.com\/d\/(.*?)=w1000/i";
+            if(isset($urls)){
+                foreach ($urls as $url){
+                    preg_match($pattern, $url,$matches);
+                    $folderId = $matches[1]??null;
+                    if($folderId)
+                        $driveService->files->delete($folderId);
+                }
+            }
+
+        }catch (\Exception $e){
+
+        }
+
+        return true;
+    }
+
+    public function postGGDrive($driveService, $file, $folderId)
+    {
+        if (!$file) {
+            return null;
+        }
+        $name = $file->getClientOriginalName();
+        $type = $file->getClientMimeType();
+
+        $content = file_get_contents($file->getRealPath());
+
+        $fileMetadata = new Google_Service_Drive_DriveFile(array(
+            'name' => $this->generateRandomString(15) . '_' . time() . '_' . $name,
+            'parents' => array($folderId)));
+        $file = $driveService->files->create($fileMetadata, array(
+            'data' => $content,
+            'mimeType' => $type,
+            'uploadType' => 'multipart',
+            'fields' => 'id'));
+        return $file;
+    }
+
 }

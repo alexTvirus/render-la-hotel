@@ -59,6 +59,7 @@ class PacketController extends BaseController
 
     public function store(Request $request)
     {
+
         $info = $request->only([
             'name_packet',
             'base_price',
@@ -69,16 +70,19 @@ class PacketController extends BaseController
             'start_at',
             'end_at',
             'number_guest',
-            'number_room'
+            'number_room',
+            'link_img',
+            'imageIds',
+            'benefits'
         ]);
         $query_array = $request->query();
         DB::beginTransaction();
         try {
             $tour = $query_array['tour'] ?? "";
             if (empty($tour))
-                $entity = $this->packetServices->save($info);
+                $entity = $this->packetServices->save($request,$info);
             else
-                $entity = $this->packetServices->saveTour($info);
+                $entity = $this->packetServices->saveTour($request,$info);
             if (empty($entity)) {
                 DB::rollBack();
                 return $this->responseJson("fail", Response::HTTP_FAILED_DEPENDENCY, []);
@@ -87,11 +91,13 @@ class PacketController extends BaseController
             return $this->responseJson("success", Response::HTTP_OK, $entity);
         } catch (\Exception $e) {
             DB::rollBack();
+			return $this->responseJson("fail", Response::HTTP_BAD_GATEWAY, $e);
         }
     }
 
     public function update(Request $request, $packetId)
     {
+
         $info = $request->only([
             'id',
             'name_packet',
@@ -103,7 +109,10 @@ class PacketController extends BaseController
             'start_at',
             'end_at',
             'number_guest',
-            'number_room'
+            'number_room',
+            'link_img',
+            'imageIds',
+            'benefits'
         ]);
         $info['id'] = $packetId;
         $query_array = $request->query();
@@ -111,17 +120,18 @@ class PacketController extends BaseController
         try {
             $tour = $query_array['tour'] ?? "";
             if (empty($tour))
-                $entity = $this->packetServices->save($info);
+                $entity = $this->packetServices->save($request,$info);
             else
-                $entity = $this->packetServices->saveTour($info);
+                $entity = $this->packetServices->saveTour($request,$info);
             if (empty($entity)) {
                 DB::rollBack();
-                return $this->responseJson("fail", Response::HTTP_FAILED_DEPENDENCY, []);
+                return $this->responseJson("fail", Response::HTTP_FAILED_DEPENDENCY, "fail");
             }
             DB::commit();
+			return $this->responseJson("success", Response::HTTP_OK, $entity);
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->responseJson("fail", Response::HTTP_BAD_GATEWAY, []);
+            return $this->responseJson("fail", Response::HTTP_BAD_GATEWAY, $e);
         }
     }
 

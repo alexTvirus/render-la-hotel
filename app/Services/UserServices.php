@@ -28,8 +28,44 @@ class UserServices extends BaseServices
                 $query = $query->with($value);
             }
         }
+		$query = $query->orderBy('users.updated_at', 'desc');
         $data = empty($limit) ? ($query->get()) : ($query->paginate($limit));
 		return $data;
+    }
+
+	public function getAllWishlists($request)
+    {
+		$limit = $request->get('limit', RoomTypeModel::LIMIT_PAGE);
+        $query_array = $request->query();
+		$roomTypes = json_decode($roomTypes, TRUE);
+
+        $query = $this->model;
+        $relations = $request->get("loadRelation", []);
+        if (!empty($relations)) {
+            foreach ($relations as $key => $value) {
+                $query = $query->with($value);
+            }
+        }
+		$query = $query->orderBy('users.updated_at', 'desc');
+        $data = empty($limit) ? ($query->get()) : ($query->paginate($limit));
+		return $data;
+    }
+
+	 public function saveWishlists($request,array $attributes)
+    {
+		$room_types = $attributes['room_types'] ?? "";
+		$entity = $this->getCurrentUser();
+        if(!empty($entity) && !empty($room_types)){
+            $user = $entity->whereHas("wishlists",function ($query)use($room_types){
+                $query->where('room_type_id',$room_types);
+            })->first();
+            if(!empty($user)){
+                $entity->roomTypes()->detach($room_types);
+            }else{
+                $entity->roomTypes()->attach($room_types);
+            }
+        }
+		return $entity;
     }
 
 

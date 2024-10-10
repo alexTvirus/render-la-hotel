@@ -11,9 +11,13 @@ use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
+use Spatie\Permission\Traits\HasRoles;
+
+
+
 class User extends Authenticatable implements JWTSubject,MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable,HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -66,6 +70,15 @@ class User extends Authenticatable implements JWTSubject,MustVerifyEmail
 
     function bookings(){
         return $this->hasMany(Booking::class,'customer_id');
+    }
+
+    public function roomTypes()
+    {
+        return $this->belongsToMany(RoomType::class, 'wishlists', 'customer_id', 'room_type_id')->withTimestamps();
+    }
+
+    function wishlists(){
+        return $this->hasMany(WishList::class,'customer_id')->orderBy('updated_at', 'desc');
     }
 
     public function scopeActive(Builder $query): void
