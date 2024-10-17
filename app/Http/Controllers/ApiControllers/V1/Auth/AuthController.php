@@ -169,6 +169,9 @@ class AuthController extends BaseController
     {
         $user = auth()->user();
         $user->wishlists;
+		$roles = $user->getRoleNames();
+		unset($user['roles']);
+		$user["roles"] = $roles;
         return $user;
     }
 }

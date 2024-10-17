@@ -23,7 +23,9 @@ use App\Http\Controllers\ApiControllers\V1\Backend\RoomTypeController as BERoomT
 use App\Http\Controllers\ApiControllers\V1\Backend\ImageController as BEImageController;
 use App\Http\Controllers\ApiControllers\V1\Backend\BenefitController as BEBenefitController;
 
-
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +38,42 @@ use App\Http\Controllers\ApiControllers\V1\Backend\BenefitController as BEBenefi
 |
 */
 Route::group(array('prefix' => '/test', 'as' => 'test'), function () {
+    $user = User::find(31)??auth()->user();
+   
+	$user->assignRole("admin");
+
+    //$role = Role::create(['name' => 'admin']);
+    //$permission = Permission::create(['name' => 'delete articles']);
+    //$role->givePermissionTo($permission);
+	
+	//$permission = Permission::create(['name' => 'products.publish']);
+	
+	//$permission = Permission::find(3);
+	//$role = Role::find(3);
+	//$user->givePermissionTo($permission);
+	//$role->givePermissionTo($permission);
+	//$user->assignRole("writer");
+	//$user->givePermissionTo('delete articles');
+	
+	// them permison 1 luc nhieu bang
+	//Permission::create(['name'=>'products,categories.create,update,view']);
+	
+	
+	// add permison vao user 
+	//$user->givePermissionTo('products.publish');
+	
+	//xoa role bang name
+	//$user->removeRole('writer');
+	
+	
+	
+    //$permissionNames = $user->getPermissionNames(); // collection of name strings
+	//$permissions = $user->permissions; // collection of permission objects
+	//$roles = $user->roles()->with("permissions")->get(); // collection of permission objects
+	//$user->givePermissionTo('products,categories.create,update,view');
+	
+    //dd([ $permissionNames,$permissions,$user->can('products.create'),$user->can('products.publish'),$roles]);
+
     $x = Carbon::now()->format('Y-m-d');
     $x = Carbon::create()->year(2024)->month(1)->firstOfQuarter();
     $x = Carbon::create()->year(2024)->month(1)->endOfQuarter();
@@ -44,6 +82,7 @@ Route::group(array('prefix' => '/test', 'as' => 'test'), function () {
 //    $request['checkout_at'] ="2024-05-17 00:00:00";
 //    $rooms = $roomservice->getRoomType($request);
 //    dd($rooms);
+	return "ok";
 });
 
 
@@ -52,7 +91,7 @@ Route::group(array('prefix' => '/v1'), function () {
         Route::get('/', [RoomTypeController::class, 'index'])->name('list');
 
         Route::get('/create', function () {
-
+			
         })->name('create');
 
         Route::get('/edit/{code}', function () {
@@ -123,8 +162,13 @@ Route::group(array('prefix' => '/v1'), function () {
     Route::group(array('prefix' => 'benefits', 'as' => 'benefits.'), function () {
     });
 
+	Route::group(array('prefix' => 'images', 'as' => 'images.'), function () {
+            Route::get('/{Id}', [BEImageController::class, 'show'])->name('show');
+            Route::post('/', [BEImageController::class, 'store'])->name('store');
+            Route::delete('/{Id}', [BEImageController::class, 'delete'])->name('delete');
+    });
 
-    Route::group(array('prefix' => 'admin'), function () {
+    Route::group(array('prefix' => 'admin','middleware' => [ 'auth:api','role:admin']), function () {
         Route::get('/dashboard', [DashBoardController::class, 'index'])->name('list');
         Route::group(array('prefix' => 'bookings', 'as' => 'bookings.'), function () {
             Route::get('/', [BEBookingController::class, 'index'])->name('index');
@@ -186,11 +230,7 @@ Route::group(array('prefix' => '/v1'), function () {
             Route::patch('/{Id}', [BEUserController::class, 'update'])->name('patch');
         });
 
-        Route::group(array('prefix' => 'images', 'as' => 'images.'), function () {
-            Route::get('/{Id}', [BEImageController::class, 'show'])->name('show');
-            Route::post('/', [BEImageController::class, 'store'])->name('store');
-            Route::delete('/{Id}', [BEImageController::class, 'delete'])->name('delete');
-        });
+       
 
     });
 

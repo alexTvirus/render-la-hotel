@@ -33,10 +33,13 @@ class RatingRoomListResource extends ApiResource
                 "created_at" => $guide->created_at
             ]);
         });
+
+		$lists['room_type_id'] = $request['room_type_id'];
+		$lists['packet_id'] = $request['packet_id'];
         $avg = $this->resource->avg('rate');
         $lists['avg'] = number_format((float) $avg, 1, '.', '');
 		$lists['room_type_packet_id'] = $roomTypePacketId;
-		$lists['canReview'] = $ratingServices->canReview($this->resource);
+		$lists['canReview'] = $ratingServices->canReview($request,$this->resource);
         return $lists->toArray();
     }
 }

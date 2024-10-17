@@ -90,7 +90,9 @@ class RoomTypeServices extends BaseServices
 
 				}
 				if (!empty($ratings)) {
-					$query = $query->whereIn('room_type_packet.rate', $ratings);
+					$query = $query
+					->where('room_type_packet.isTour', 0)
+					->whereIn('room_type_packet.rate', $ratings);
 				}
 
 			});
@@ -255,6 +257,16 @@ class RoomTypeServices extends BaseServices
 
     public function prepareRatings(&$roomType, &$packets)
     {
+		$roomType->load(["roomTypePackets" => function($query){
+			$query->where("isTour",0);
+		}]);
+		
+		$avg = $roomType['roomTypePackets']?->avg("rate")??0;
+
+		unset($roomType['roomTypePackets']);
+		unset($roomType['room_type_packets']);
+		
+		
         $roomType->roomTypePackets->each(function ($item, $key) use (&$packets) {
             $packet = $packets->firstWhere("id", $item->packet_id);
             if ($packet) {
@@ -267,8 +279,7 @@ class RoomTypeServices extends BaseServices
 
 
         });
-
-        $avg = $packets->avg("rating");
+		
         $avg = number_format((float) $avg, 1, '.', '');
         $roomType['rating'] = $avg;
         unset($roomType['ratings']);

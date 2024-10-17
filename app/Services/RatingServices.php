@@ -31,8 +31,8 @@ class RatingServices extends BaseServices
         $roomTypeid = $query_array['room_type_id'] ?? "";
         $relations = $request->get("loadRelation", []);
 
-        $room_type_id = $request->get("room_type_id");
-        $packet_id = $request->get("packet_id");
+        $room_type_id = $request->get("room_type_id")?? "";
+        $packet_id = $request->get("packet_id")?? "";
         if (!empty($room_type_id) && !empty($packet_id)) {
             $roomTypePacket = $this->roomTypePacketServices
                 ->getRoomTypePacketByPacketIdAndRoomTypeId($request["room_type_id"], $request["packet_id"]);
@@ -62,6 +62,7 @@ class RatingServices extends BaseServices
         $query->orderBy('updated_at', 'desc');
 
         $data = empty($limit) ? ($query->get()) : ($query->paginate($limit));
+		
         //$query->get();
         //$this->model->where("dsd",12)->get();
 
@@ -69,10 +70,12 @@ class RatingServices extends BaseServices
 
     }
 
-    public function canReview($data)
+    public function canReview($request,$data)
     {
-        if (!$data->isEmpty()) {
-            $roomTypePacketId = $data->first()->room_type_packet_id;
+		$roomTypePacketServices = app()->make(RoomTypePacketServices::class);
+		$roomTypePacketId = $roomTypePacketServices->getRoomTypePacketByRoomTypeAndPacket($request['room_type_id'],$request['packet_id'])?->first()?->id??null;
+		 
+        if (!empty($roomTypePacketId)) {
             $user = $this->getCurrentUser();
             $bookings = $user->bookings->pluck('id')->all();
             $roomBookingQuery = RoomBooking::query();
