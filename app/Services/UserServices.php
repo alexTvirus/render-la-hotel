@@ -21,7 +21,16 @@ class UserServices extends BaseServices
     public function index($request)
     {
 		$limit = $request->get("limit", "");
+		$query_array = $request->query();
+		$isUser = $query_array['isUser'] ?? "";
         $query = $this->model;
+		
+		if (!empty($isUser)) {
+            $query = $query->whereHas("roles", function($q) {
+				$q->whereNotIn("name", ["admin"]);
+			});
+        }
+		
         $relations = $request->get("loadRelation", []);
         if (!empty($relations)) {
             foreach ($relations as $key => $value) {
@@ -30,6 +39,7 @@ class UserServices extends BaseServices
         }
 		$query = $query->orderBy('users.updated_at', 'desc');
         $data = empty($limit) ? ($query->get()) : ($query->paginate($limit));
+		//$this->model->where("ef",32)->get();
 		return $data;
     }
 
@@ -92,6 +102,7 @@ class UserServices extends BaseServices
             }
         } else {
             $entity = $this->model->create($attributes);
+			$entity->assignRole("user");
             return $entity;
         }
     }

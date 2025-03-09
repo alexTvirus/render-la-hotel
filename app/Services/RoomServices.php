@@ -90,7 +90,9 @@ class RoomServices extends BaseServices
             }
         }
 
-		$query = $query->orderBy('rooms.updated_at', 'desc');
+		$query = $query
+		->orderBy('rooms.id', 'desc')
+		->orderBy('rooms.updated_at', 'desc');
         $rs = empty($limit) ? ($query->get()) : ($query->paginate($limit));
 //        $this->model->where("ewf", 12)->get();
         return $rs;

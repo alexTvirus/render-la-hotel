@@ -26,6 +26,7 @@ class UserController extends BaseController
 
     public function index(Request $request)
     {
+		$request['isUser'] = true;
         $lists = $this->userServices->index($request);
 
         if ($lists instanceof \Illuminate\Pagination\LengthAwarePaginator){

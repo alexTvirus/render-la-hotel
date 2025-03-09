@@ -78,12 +78,16 @@ class DashBoardServices extends BaseServices
 
         // todo:
         // lay tat ca user dc tao theo (nam/quy/thang)
-        $userQuery = User::query();
+        $userQuery = User::query()->whereHas("roles", function($q) {
+				$q->whereNotIn("name", ["admin"]);
+			});
         $this->timeCondition($request, $userQuery, app(User::class)->getTable());
         $user = $userQuery->active()->count();
         $result->put("number_of_user" , $user);
         // lay tat ca user da verify tao theo (nam/quy/thang)
-        $userQuery = User::query();
+        $userQuery = User::query()->whereHas("roles", function($q) {
+				$q->whereNotIn("name", ["admin"]);
+			});
         $this->timeCondition($request, $userQuery, app(User::class)->getTable());
         $user = $userQuery->active()->verified()->count();
         $result->put("number_of_verified" , $user);

@@ -52,6 +52,7 @@ class RoomTypeServices extends BaseServices
         //filter theo gói packet
         $tour = $query_array['tour'] ?? "";
 		$all = $query_array['all'] ?? "";
+		$room_type_name = $query_array['room_type_name'] ?? "";
         $packets = $query_array['packets'] ?? "{}";
         $ratings = $query_array['ratings'] ?? "{}";
 		$selectTour = $query_array['selectTour'] ?? "";
@@ -115,6 +116,10 @@ class RoomTypeServices extends BaseServices
             $price = json_decode($price, TRUE);
             $query = $query->where('base_price', ">=", $price['min'])
                 ->where('base_price', "<=", $price['max']);
+        }
+
+		if (!empty($room_type_name)) {
+            $query = $query->where('name', "like", "%".$room_type_name."%");
         }
 
 

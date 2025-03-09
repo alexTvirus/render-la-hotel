@@ -66,6 +66,7 @@ class RoomController extends BaseController
         } catch (\Exception $e) {
             DB::rollBack();
         }
+		return $this->responseJson("fail", Response::HTTP_FAILED_DEPENDENCY, []);
     }
 
     public function update(Request $request, $roomId)
@@ -86,6 +87,7 @@ class RoomController extends BaseController
         } catch (\Exception $e) {
             DB::rollBack();
         }
+		return $this->responseJson("fail", Response::HTTP_FAILED_DEPENDENCY, []);
     }
 
     public function show(Request $request, $roomId)

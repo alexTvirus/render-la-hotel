@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->string('room_view')->nullable();
-            $table->integer('room_number')->nullable();
+            $table->integer('room_number')->nullable()->unique();
 
             $table->bigInteger('room_type_packet_id')->nullable();
 
