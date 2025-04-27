@@ -51,10 +51,8 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $exception)
     {
-        if ((env('APP_ENV') == 'production') && !str_contains($request->fullUrl(), '/admin')) {
-            return redirect()->route('landingPage');
-        }
+       return parent::render($request, $exception);
 
-        return parent::render($request, $exception);
+        
     }
 }
