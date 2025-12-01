@@ -66,7 +66,7 @@ class VerificationController extends BaseController
             return redirect('http://localhost:3000/login');
         }
 
-        return $this->responseJson('fail', Response::HTTP_BAD_REQUEST, 'User is incorrect');
+        return $this->responseJson('success', Response::HTTP_OK, 'User is verified');
     }
 
     /**

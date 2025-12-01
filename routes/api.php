@@ -38,45 +38,45 @@ use App\Models\User;
 |
 */
 Route::group(array('prefix' => '/test', 'as' => 'test'), function () {
-    $user = User::find(31)??auth()->user();
-   
-	$user->assignRole("admin");
+     //$user = User::find(31)??auth()->user();
+
+	 //$user->assignRole("admin");
 
     //$role = Role::create(['name' => 'admin']);
     //$permission = Permission::create(['name' => 'delete articles']);
     //$role->givePermissionTo($permission);
-	
+
 	//$permission = Permission::create(['name' => 'products.publish']);
-	
+
 	//$permission = Permission::find(3);
 	//$role = Role::find(3);
 	//$user->givePermissionTo($permission);
 	//$role->givePermissionTo($permission);
 	//$user->assignRole("writer");
 	//$user->givePermissionTo('delete articles');
-	
+
 	// them permison 1 luc nhieu bang
 	//Permission::create(['name'=>'products,categories.create,update,view']);
-	
-	
-	// add permison vao user 
+
+
+	// add permison vao user
 	//$user->givePermissionTo('products.publish');
-	
+
 	//xoa role bang name
 	//$user->removeRole('writer');
-	
-	
-	
+
+
+
     //$permissionNames = $user->getPermissionNames(); // collection of name strings
 	//$permissions = $user->permissions; // collection of permission objects
 	//$roles = $user->roles()->with("permissions")->get(); // collection of permission objects
 	//$user->givePermissionTo('products,categories.create,update,view');
-	
+
     //dd([ $permissionNames,$permissions,$user->can('products.create'),$user->can('products.publish'),$roles]);
 
-    $x = Carbon::now()->format('Y-m-d');
-    $x = Carbon::create()->year(2024)->month(1)->firstOfQuarter();
-    $x = Carbon::create()->year(2024)->month(1)->endOfQuarter();
+     //$x = Carbon::now()->format('Y-m-d');
+     //$x = Carbon::create()->year(2024)->month(1)->firstOfQuarter();
+     //$x = Carbon::create()->year(2024)->month(1)->endOfQuarter();
 //    $roomservice =  app()->make(\App\Services\RoomTypeServices::class);
 //    $request['checkin_at'] = "2024-05-16 00:00:00";
 //    $request['checkout_at'] ="2024-05-17 00:00:00";
@@ -91,7 +91,7 @@ Route::group(array('prefix' => '/v1'), function () {
         Route::get('/', [RoomTypeController::class, 'index'])->name('list');
 
         Route::get('/create', function () {
-			
+
         })->name('create');
 
         Route::get('/edit/{code}', function () {
@@ -205,7 +205,7 @@ Route::group(array('prefix' => '/v1'), function () {
             Route::patch('/{Id}', [BEAmenityController::class, 'update'])->name('patch');
 			Route::delete('/{Id}', [BEAmenityController::class, 'delete'])->name('delete');
         });
-		
+
 		Route::group(array('prefix' => 'benefits', 'as' => 'amenities.'), function () {
             Route::get('/', [BEBenefitController::class, 'index'])->name('index');
             Route::get('/{Id}', [BEBenefitController::class, 'show'])->name('show');
@@ -213,8 +213,8 @@ Route::group(array('prefix' => '/v1'), function () {
             Route::patch('/{Id}', [BEBenefitController::class, 'update'])->name('patch');
 			Route::delete('/{Id}', [BEBenefitController::class, 'delete'])->name('delete');
         });
-		
-		
+
+
 
         Route::group(array('prefix' => 'room-types', 'as' => 'room_type.'), function () {
             Route::get('/', [BERoomTypeController::class, 'index'])->name('index');
@@ -230,7 +230,7 @@ Route::group(array('prefix' => '/v1'), function () {
             Route::patch('/{Id}', [BEUserController::class, 'update'])->name('patch');
         });
 
-       
+
 
     });
 
