@@ -15,6 +15,8 @@ use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mailer\Transport\Dsn;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransportFactory;
 use Symfony\Component\Mime\Email;
+use Dacastro4\LaravelGmail\Services\Message\Mail as Mail1;
+use App\Mails\VerifyMail;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +28,48 @@ use Symfony\Component\Mime\Email;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+Route::get('/oauth/gmail', function (){
+    return LaravelGmail::redirect();
+});
+
+Route::get('/oauth2', function (){
+    LaravelGmail::makeToken();
+    return redirect()->to('/');
+});
+
+Route::get('/oauth/gmail/logout', function (){
+    LaravelGmail::logout(); //It returns exception if fails
+    return redirect()->to('/');
+});
+
+Route::get('test22', function (){
+    $mail = new Mail1;
+	$mail->using("ya29.a0ATi6K2vI6mCObYV3PDIUzWJdAB9aX-EqBxEWp0UEAOf17Nok_B-gE0izvPUL7u87UChFox4eaxdKY6HfPnQDAr1k94dW3wgEj4sdsiId1R227IJTmdCsfPB7b1vedCmIE4JMVtvxBNQ1v7X8ky_vCZdbD8VtRvVLkU5-A82jsmDUR2p4fRC0ag-tFK2nuLZ7Av-z6SUaCgYKAW8SARYSFQHGX2MiG2Ed7lh8ue40JzdvgP0Ajg0206");
+	$mail->refreshToken("1//0gtWyM7JJEZ5kCgYIARAAGBASNwF-L9IrbWazxcrY6l6sj_-tPtQykO8rapZY4MqKv1dgqmH2MmwKuiYozsWLBKsJBcMjrA8_Gxk");
+	$mailableInstance = new VerifyMail("tét");
+	$mail->to('proxywindert9@gmail.com');
+	$mail->from('lisatthu35@gmail.com');
+	$mail->subject( "sub" );
+	$mail->message($mailableInstance->render());
+	$mail->send();
+    return "ok";
+});
+
+Route::get('test33', function (){
+     $mail = app()->make('gmailProvider');
+	 
+	$mailableInstance = new VerifyMail("tét");
+	$mail->to('proxywindert9@gmail.com');
+	$mail->message($mailableInstance->render());
+	$mail->send();
+    return "ok";
+});
+
+Route::post('/github-webhook', function () {
+    return "ok";
+});
+
+
 Route::get('/test11', function () {
     $mailConfig = config('mail');
     $mailConfig['mailers']['smtp']['transport'] = 'smtp';

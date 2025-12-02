@@ -34,7 +34,7 @@ return [
     */
 
     'connections' => [
-		'mysql' => [
+		'mysql1' => [
             'driver' => 'mysql',
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
@@ -47,6 +47,24 @@ return [
             'prefix' => '',
             'strict' => true,
             'engine' => null,
+        ],
+		'mysql' => [
+            'driver' => 'mysql',
+            'host' => 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com',
+            'port' => '4000',
+            'database' => 'test',
+            'username' => '4TDfkzAQNRFVkKC.root',
+            'password' => 'kZ3DHrV8KTRbqDA8',
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+             'sslmode' => env('DB_SSLMODE', 'prefer'),
+			'options'   => array(
+				PDO::MYSQL_ATTR_SSL_CA      => base_path('public/isrgrootx1.pem'),
+			)
         ],
 
         'pgsql' => [

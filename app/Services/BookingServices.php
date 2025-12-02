@@ -256,7 +256,13 @@ class BookingServices extends BaseServices
 
         $this->roomServices->getRoomByIdsAndPacket($booking);
 
-        Mail::to($payment->email)->send(new BookingMail($booking,$payment, "Thông tin đơn đặt phòng"));
+        $gmailProvider = app()->make('gmailProvider');
+        $gmailProvider->to($payment->email);
+        $mailableInstance = new BookingMail($booking,$payment, "Thông tin đơn đặt phòng");
+        $gmailProvider->message($mailableInstance->render());
+	    $gmailProvider->send();
+
+        //Mail::to($payment->email)->send(new BookingMail($booking,$payment, "Thông tin đơn đặt phòng"));
 
         return $booking;
     }
@@ -287,7 +293,12 @@ class BookingServices extends BaseServices
             $entity = $this->model->create($attributes);
         }
         if ($mailSubject) {
-            Mail::to($entity->payments[0]->email)->send(new BookingMail($entity, $entity->payments[0], $mailSubject));
+            $gmailProvider = app()->make('gmailProvider');
+            $gmailProvider->to($entity->payments[0]->email);
+            $mailableInstance = new BookingMail($entity, $entity->payments[0], $mailSubject);
+            $gmailProvider->message($mailableInstance->render());
+            $gmailProvider->send();
+            //Mail::to($entity->payments[0]->email)->send(new BookingMail($entity, $entity->payments[0], $mailSubject));
         }
         return $entity;
     }

@@ -83,7 +83,14 @@ class VerificationController extends BaseController
         }
         $token = JWTAuth::fromUser($user);
         $verificationUrl = $this->genUrlVerify($token);
-        Mail::to($user->email)->send(new VerifyMail($verificationUrl));
+
+        $gmailProvider = app()->make('gmailProvider');
+        $gmailProvider->to($user->email);
+        $mailableInstance = new VerifyMail($verificationUrl);
+        $gmailProvider->message($mailableInstance->render());
+	    $gmailProvider->send();
+
+        //Mail::to($user->email)->send(new VerifyMail($verificationUrl));
 
         return $this->responseJson('success', Response::HTTP_OK, "'A fresh verification link has been sent to your email address.'");
 

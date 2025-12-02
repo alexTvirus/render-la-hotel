@@ -197,6 +197,8 @@ return [
         App\Providers\RouteServiceProvider::class,
 		App\Providers\GoogleDriveServiceProvider::class,
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
+		Dacastro4\LaravelGmail\LaravelGmailServiceProvider::class,
+		App\Providers\GmailServiceProvider::class
     ],
 
     /*
@@ -234,6 +236,7 @@ return [
         'Schema' => Illuminate\Support\Facades\Schema::class,
         'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
         'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
+		'LaravelGmail' => Dacastro4\LaravelGmail\Facade\LaravelGmail::class
     ])->toArray(),
 
 ];

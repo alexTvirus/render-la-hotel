@@ -48,7 +48,13 @@ class AuthController extends BaseController
 
         $verificationUrl = $this->genUrlVerify($token);
 
-        Mail::to($user->email)->send(new VerifyMail($verificationUrl));
+        $gmailProvider = app()->make('gmailProvider');
+        $gmailProvider->to($user->email);
+        $mailableInstance = new VerifyMail($verificationUrl);
+        $gmailProvider->message($mailableInstance->render());
+	    $gmailProvider->send();
+
+        //Mail::to($user->email)->send(new VerifyMail($verificationUrl));
 
         return $this->responseJson('User successfully registered', Response::HTTP_OK, $user);
     }
@@ -118,8 +124,15 @@ class AuthController extends BaseController
             return $this->responseErrorJson('fail', Response::HTTP_CONFLICT, "'User does not exist.'");
         }
         $password = $this->genRandomPassword();
-        $this->userServices->save(['id' => $user->id, 'password' => bcrypt($password)]);
-        Mail::to($user->email)->send(new ResetPasswordMail($password, $email));
+
+        $gmailProvider = app()->make('gmailProvider');
+        $gmailProvider->to($user->email);
+        $mailableInstance = new ResetPasswordMail($password, $email);
+        $gmailProvider->message($mailableInstance->render());
+	    $gmailProvider->send();
+  
+        //Mail::to($user->email)->send(new ResetPasswordMail($password, $email));
+		$this->userServices->save(['id' => $user->id, 'password' => bcrypt($password)]);
         return $this->responseJson('success', Response::HTTP_OK, "'Hãy kiểm tra email'");
     }
 
